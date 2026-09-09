@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "j-jayes": {
+      "source": {
+        "source": "github",
+        "repo": "j-jayes/slides"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "slides@j-jayes": true
+  }
+}

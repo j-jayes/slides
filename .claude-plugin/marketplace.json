@@ -1,0 +1,16 @@
+{
+  "name": "j-jayes",
+  "owner": {
+    "name": "Jonathan Jayes",
+    "email": "jonathan.jayes@nexergroup.com"
+  },
+  "description": "Jonathan Jayes' Claude Code plugins: the Nexer slide kit and its companion skills.",
+  "plugins": [
+    {
+      "name": "slides",
+      "source": "./",
+      "description": "Nexer-branded Quarto Reveal.js and PowerPoint slide kit, plus the skills for building a deck and working on the code around it.",
+      "version": "1.0.0"
+    }
+  ]
+}
