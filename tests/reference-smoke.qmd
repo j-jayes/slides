@@ -1,0 +1,71 @@
+---
+title: "Nexer reference smoke test"
+subtitle: "Every pandoc layout, exercised once"
+author: "Jonathan Jayes"
+date: today
+format: nexer-pptx
+---
+
+# A section divider
+
+## A plain content slide
+
+- First bullet
+- Second bullet
+- Third bullet
+
+::: {.notes}
+Speaker notes force the notesMaster path and getSlideNumberFieldId, which is a
+real failure mode if the notes master is missing.
+:::
+
+## Two columns of text
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Left column text only, so pandoc picks Two Content rather than Comparison.
+:::
+
+::: {.column width="50%"}
+Right column text only.
+:::
+
+::::
+
+## A comparison with headings and images
+
+:::: {.columns}
+
+::: {.column width="50%"}
+Left heading text
+
+![](../assets/nexer-logo.png)
+:::
+
+::: {.column width="50%"}
+Right heading text
+
+![](../assets/nexer-logo.png)
+:::
+
+::::
+
+## Framing text then an exhibit
+
+A sentence of framing text before the exhibit, which is what makes pandoc
+choose Content with Caption.
+
+![](../assets/swirl-dark.jpg)
+
+## Framing text then a table
+
+Three routes are open, and they differ mainly in who carries the risk.
+
+| Route | Risk sits with | Time to value |
+|---|---|---|
+| Pilot first | Nexer | ~6 weeks |
+| Platform first | Shared | ~6 months |
+| Buy and adapt | Client | ~3 months |
+
+##

@@ -1,0 +1,3 @@
+# `quarto use template` copies every non-hidden file. The skills are installed
+# as a Claude Code plugin, not copied into a deck folder.
+skills/

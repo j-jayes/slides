@@ -1,0 +1,38 @@
+title: Nexer Insight Presentation
+author: Nexer Insight
+version: 1.0.0
+quarto-required: ">=1.6.0"
+contributes:
+  formats:
+    revealjs:
+      # `brand` is listed explicitly so the layer order is deterministic and
+      # nexer.scss can rely on $brand-* already being defined.
+      theme: [brand, nexer.scss]
+      width: 1600
+      height: 900
+      slide-number: c
+      fig-align: center
+      fig-cap-location: bottom
+      code-overflow: wrap
+      code-block-bg: true
+      link-external-newwindow: true
+      # Quarto's _brand.yml sets the font *names* but (as of 1.8) does not fetch
+      # `source: google` files or emit a stylesheet link, so the faces silently
+      # fall back to system fonts. Load them explicitly here. If you swap in
+      # licensed Bw Gradual / FK Grotesk webfonts, change this link and the
+      # families in _brand.yml together.
+      include-in-header:
+        - text: |
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;700&display=swap">
+    pptx:
+      # _brand.yml does not reach pptx; PowerPoint styling comes from this
+      # reference doc, built by tools/build_reference_pptx.py.
+      reference-doc: nexer-reference.pptx
+      # Must be explicit: pandoc otherwise infers slide level from the first
+      # heading followed by a non-heading block, and a leading HTML comment
+      # makes `#` qualify -- turning section dividers into content slides.
+      slide-level: 2
+      filters:
+        - pptx-titles.lua

@@ -1,0 +1,12 @@
+# Makes this directory a Quarto project, so _brand.yml and _extensions/nexer
+# resolve from subdirectories too (tests/ could not see the extension without
+# this).
+project:
+  type: default
+  # Every .qmd, at any depth -- so a deck in its own folder needs no edit here.
+  # Scoped to .qmd on purpose: a bare project renders every .md it finds, which
+  # means CLAUDE.md and every skills/*/SKILL.md become stray HTML.
+  render:
+    - "**/*.qmd"
+  # Decks opt in to a PDF with `export-pdf: true` in their own front matter.
+  post-render: python tools/export_pdf.py --post-render

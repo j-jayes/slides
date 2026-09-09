@@ -1,0 +1,316 @@
+/*-- scss:defaults --*/
+
+// _brand.yml is the source of truth for brand colour. Quarto emits it as CSS
+// custom properties (--brand-purple, ...), which the rules below consume, so
+// editing _brand.yml changes the deck without touching this file.
+//
+// The SCSS variables here are a mirror, needed because Reveal's own defaults
+// ($link-color and friends) must resolve to concrete values at compile time --
+// Quarto layers brand *below* this file, so $brand-* is not readable here.
+// Keep these in sync with _brand.yml; the palette rarely changes.
+$brand-purple:       #5A1F9F !default;
+$brand-purple-light: #AA4BF4 !default;
+$brand-orange:       #FF5028 !default;
+$brand-orange-light: #FF875A !default;
+$brand-blue-pale:    #D9E6F0 !default;
+$brand-grey:         #C8C8C8 !default;
+$brand-grey-pale:    #F0F0F0 !default;
+$brand-ink:          #000000 !default;
+
+$nexer-purple: $brand-purple;
+$nexer-orange: $brand-orange;
+
+// Light body, per the agreed system. Dark is reached per-slide via
+// background-color / background-image, not by inverting the theme.
+$body-bg: #ffffff;
+$body-color: $brand-ink;
+
+$link-color:       $nexer-purple;
+$link-color-hover: $brand-purple-light;
+$selection-bg:     $brand-purple-light;
+$selection-color:  #ffffff;
+
+// Real Nexer faces first: they are installed on Nexer machines, so the deck
+// renders in true brand type there. Outfit/Inter are the Google fallbacks
+// loaded by _extension.yml for everyone else. Nothing is redistributed --
+// the browser only uses a face the machine already has.
+$font-family-sans-serif: "FK Grotesk", Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+$font-family-monospace:  "JetBrains Mono", Consolas, "Courier New", monospace;
+
+$presentation-font-size-root: 32px;   // tuned for the 1600x900 canvas
+$presentation-line-height: 1.4;
+
+$presentation-heading-font: "Bw Gradual", Outfit, "Segoe UI", system-ui, sans-serif;
+$presentation-heading-color: $brand-ink;
+$presentation-heading-font-weight: 600;
+$presentation-heading-line-height: 1.15;
+$presentation-heading-text-transform: none;
+$presentation-heading-text-shadow: none;
+
+// The two-tier title system: h2 is the KICKER (small), h3 is the ACTION TITLE
+// (large). This inverts the usual sizing on purpose -- see the nexer-slides skill.
+$presentation-h1-font-size: 2.4em;
+$presentation-h2-font-size: 0.62em;
+$presentation-h3-font-size: 1.05em;
+$presentation-h4-font-size: 0.9em;
+
+$presentation-block-margin: 16px;
+
+$code-block-font-size: 0.5em;
+$code-block-bg: $brand-grey-pale;
+$code-block-border-color: $brand-grey;
+
+
+/*-- scss:rules --*/
+
+// ---------------------------------------------------------------- title tiers
+
+// h2 = kicker / locator. Small, uppercase, purple, letter-spaced.
+.reveal .slide h2 {
+  color: var(--brand-purple);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.35em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid var(--brand-grey-pale);
+}
+
+// h3 immediately after the kicker is the action title: the slide takeaway.
+// It gets the visual weight a title would normally carry.
+.reveal .slide h2 + h3 {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--brand-ink);
+  line-height: 1.15;
+  margin-top: 0;
+  margin-bottom: 0.6em;
+  max-width: 92%;
+}
+
+// Any other h3 is an ordinary subhead within the body.
+.reveal .slide h3 {
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+
+.reveal .slide h4 {
+  color: var(--brand-purple);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+// ------------------------------------------------------- dark section slides
+
+// reveal.js sets .has-dark-background from background-color / background-image.
+.reveal .slide.has-dark-background,
+.reveal .slide.has-dark-background h1,
+.reveal .slide.has-dark-background h2,
+.reveal .slide.has-dark-background h3,
+.reveal .slide.has-dark-background h4,
+.reveal .slide.has-dark-background p,
+.reveal .slide.has-dark-background li {
+  color: #ffffff;
+}
+
+.reveal .slide.has-dark-background h2 {
+  color: var(--brand-purple-light);
+  border-bottom-color: rgba(255, 255, 255, 0.22);
+}
+
+.reveal .slide.has-dark-background h2 + h3 {
+  color: #ffffff;
+}
+
+.reveal .slide.has-dark-background a {
+  color: var(--brand-purple-light);
+}
+
+// Section dividers keep clear of the swirl artwork on the right.
+.reveal .slide h1 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  max-width: 62%;
+}
+
+// ------------------------------------------------------------------ big stats
+
+// The Nexer big-number treatment from the corporate deck.
+.reveal .stats {
+  display: flex;
+  gap: 1.6em;
+  align-items: flex-start;
+  margin: 0.6em 0;
+}
+
+.reveal .stat {
+  flex: 1;
+}
+
+.reveal .stat .figure {
+  display: block;
+  font-family: $presentation-heading-font;
+  font-weight: 700;
+  font-size: 2.6em;
+  line-height: 1;
+  color: var(--brand-purple);
+  letter-spacing: -0.02em;
+}
+
+.reveal .stat .label {
+  display: block;
+  margin-top: 0.25em;
+  font-size: 0.62em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #555555;
+}
+
+.reveal .slide.has-dark-background .stat .figure { color: var(--brand-purple-light); }
+.reveal .slide.has-dark-background .stat .label  { color: rgba(255, 255, 255, 0.72); }
+
+// -------------------------------------------------------------- takeaway box
+
+// The bold lead-in device from the NYC containerization report.
+.reveal .takeaway {
+  border-left: 6px solid var(--brand-orange);
+  background: var(--brand-grey-pale);
+  padding: 0.6em 0.9em;
+  margin: 0.5em 0;
+  font-weight: 500;
+}
+
+.reveal .takeaway > :first-child { margin-top: 0; }
+.reveal .takeaway > :last-child  { margin-bottom: 0; }
+
+.reveal .slide.has-dark-background .takeaway {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+// ------------------------------------------------------------- source footer
+
+// Bottom-left rail, McKinsey order: Note -> numbered footnotes -> SOURCE.
+.reveal .source {
+  position: absolute;
+  bottom: 0.6em;
+  left: 0;
+  right: 0;
+  font-size: 0.42em;
+  line-height: 1.35;
+  color: #6b6b6b;
+  text-align: left;
+}
+
+.reveal .source .label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.reveal .slide.has-dark-background .source { color: rgba(255, 255, 255, 0.6); }
+
+// Chart title on one line, bare unit line beneath it.
+.reveal .units {
+  font-size: 0.55em;
+  color: #6b6b6b;
+  margin-top: -0.4em;
+  margin-bottom: 0.5em;
+}
+
+// ------------------------------------------------------------- chip / badge
+
+.reveal .chip {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  background: var(--brand-blue-pale);
+  color: var(--brand-ink);
+  font-size: 0.5em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+}
+
+.reveal .chip.accent { background: var(--brand-orange); color: #ffffff; }
+
+// ---------------------------------------------- button link (from clean.scss)
+
+.reveal .button {
+  display: inline-block;
+  padding: 0.25em 0.7em;
+  font-size: 0.55em;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: var(--brand-purple);
+  border: 1px solid var(--brand-purple);
+  color: #ffffff !important;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+}
+
+.reveal .button:hover {
+  background-color: var(--brand-purple-light);
+  border-color: var(--brand-purple-light);
+}
+
+.reveal .button::before { content: "\25B6"; margin-right: 0.4em; }
+
+// ------------------------------------------------------- figures and tables
+
+.reveal figcaption,
+.reveal .figure-caption {
+  font-size: 0.45em;
+  color: #6b6b6b;
+  line-height: 1.35;
+  margin-top: 0.4em;
+}
+
+.reveal table {
+  font-size: 0.62em;
+  border-collapse: collapse;
+}
+
+.reveal table th {
+  background: var(--brand-grey-pale);
+  border-bottom: 2px solid var(--brand-purple);
+  text-align: left;
+  font-weight: 600;
+}
+
+.reveal table td,
+.reveal table th { padding: 0.3em 0.6em; }
+
+.reveal table tr { border-bottom: 1px solid #e6e6e6; }
+
+.reveal .slide.has-dark-background table th {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+// Quarto lays columns out as inline-block at the declared width, so any
+// horizontal padding pushes them past 100% and they wrap. Use flex + gap
+// instead: deterministic, and it gives a real gutter without touching width.
+.reveal .slide .columns {
+  display: flex;
+  gap: 1.4em;
+  align-items: flex-start;
+}
+
+.reveal .slide .columns > .column {
+  min-width: 0;   // let wide tables and figures shrink rather than overflow
+}
+
+// Inline accents.
+.reveal .accent { color: var(--brand-orange); }
+.reveal .muted  { color: #6b6b6b; }
+
+// Footer and slide number in brand colours.
+.reveal .footer { color: #6b6b6b; font-size: 0.4em; }
+.reveal .slide-number { background-color: transparent; color: var(--brand-grey); }

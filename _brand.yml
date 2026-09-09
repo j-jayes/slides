@@ -1,0 +1,60 @@
+# Nexer Insight brand.
+#
+# Colours and font roles are lifted verbatim from the corporate deck's theme
+# (temp/Sales presentation 2026.pptx -> ppt/theme/theme1.xml, "Nexer colors" /
+# "Nexer fonts"). Applies to html, revealjs, dashboard and typst -- NOT pptx,
+# which is styled by nexer-reference.pptx instead.
+meta:
+  name: Nexer Insight
+  link: https://nexergroup.com
+
+logo:
+  images:
+    nexer:
+      path: assets/nexer-logo.png
+      alt: Nexer
+    nexer-white:
+      path: assets/nexer-logo-white.png
+      alt: Nexer
+  small: nexer
+
+color:
+  palette:
+    purple: "#5A1F9F"        # theme dk2 -- the primary Nexer colour
+    purple-light: "#AA4BF4"  # theme accent1
+    orange: "#FF5028"        # theme accent3 -- highlight / call to action
+    orange-light: "#FF875A"  # theme accent5
+    blue-pale: "#D9E6F0"     # theme accent2
+    grey: "#C8C8C8"          # theme accent6
+    grey-pale: "#F0F0F0"     # theme lt2
+    ink: "#000000"           # theme dk1
+  background: white
+  foreground: ink
+  primary: purple
+  secondary: orange
+  light: grey-pale
+  dark: ink
+
+typography:
+  # Nexer's real faces are Bw Gradual (headings) and FK Grotesk (body). Both are
+  # commercial and only legitimately available embedded in the .pptx, so the web
+  # build uses the closest free equivalents. To swap in licensed webfonts later,
+  # change `source: google` to `source: file` and point at the .woff2 files.
+  fonts:
+    - family: Outfit          # stands in for Bw Gradual
+      source: google
+      weight: [300, 400, 600, 700]
+    - family: Inter           # stands in for FK Grotesk
+      source: google
+      weight: [400, 500, 700]
+  headings:
+    family: Outfit
+    weight: 600
+  base:
+    family: Inter
+    weight: 400
+  monospace:
+    family: Inter
+  link:
+    color: purple
+    decoration: underline

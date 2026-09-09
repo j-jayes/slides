@@ -1,0 +1,16 @@
+# Normalise text in the repo, check out native on Windows.
+* text=auto
+
+# Binary assets -- never apply line-ending conversion. The .pptx in particular
+# is a zip; rewriting bytes inside it would corrupt the package.
+*.pptx  binary
+*.potx  binary
+*.docx  binary
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.emf   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary

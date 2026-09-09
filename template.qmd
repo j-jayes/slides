@@ -1,0 +1,305 @@
+---
+title: "Deck title goes here"
+subtitle: "A short scoping line — who this is for and what it decides"
+author: "Jonathan Jayes"
+date: today
+format:
+  nexer-revealjs: default
+  nexer-pptx: default      # same source, editable PowerPoint
+title-slide-attributes:
+  data-background-image: "assets/swirl-dark.jpg"
+  data-background-size: cover
+  data-background-color: "#000000"
+footer: "Nexer Insight"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+source("R/nexer-ggplot.R")
+nexer_use_fonts()   # register Outfit/Inter so charts match the slide type
+library(ggplot2)
+library(dplyr)
+library(tibble)
+```
+
+<!--
+  This file is both the starter deck and the visual test fixture: every slide
+  archetype the Nexer template supports appears once, below. Delete what you do
+  not need — that is faster than remembering the syntax.
+
+  The one rule that matters: `##` is the KICKER (where am I), `###` is the
+  ACTION TITLE (what should I conclude). See the jonathan-slides skill.
+-->
+
+# The situation {background-image="assets/swirl-dark.jpg" background-color="#000000"}
+
+<!-- Section divider: `#` with a dark background and the swirl artwork. -->
+
+::: {.notes}
+Section dividers are for the audience, not for you. Say the one sentence that
+explains why the next three slides exist, then move on.
+:::
+
+## Context {background-color="#5A1F9F"}
+
+### Statement slides carry one sentence and nothing else
+
+<!-- Statement slide: purple, no body. Use sparingly — once or twice a deck. -->
+
+::: {.notes}
+Nexer purple, one line, no evidence. This is a beat, not an argument.
+:::
+
+## Market context
+
+### Adoption has grown for three years but the gap to peers is widening
+
+::::: {.columns}
+
+:::: {.column width="55%"}
+
+```{r}
+#| label: chart-adoption
+#| fig-width: 7
+#| fig-height: 4.2
+
+adoption <- tibble(
+  year  = rep(2021:2025, 2),
+  group = rep(c("Nexer clients", "Sector average"), each = 5),
+  value = c(12, 19, 28, 41, 58, 15, 24, 38, 57, 82)
+)
+
+ggplot(adoption, aes(year, value, colour = group)) +
+  geom_line(linewidth = 1.4) +
+  geom_point(size = 2.6) +
+  scale_colour_manual(values = c(
+    "Nexer clients"   = nexer_colours[["purple"]],
+    "Sector average"  = nexer_colours[["grey"]]
+  )) +
+  labs(
+    title = "Adoption index",
+    subtitle = paste(
+      nexer_span("Nexer clients", nexer_colours[["purple"]]),
+      "vs",
+      nexer_span("sector average", nexer_colours[["grey"]])
+    )
+  ) +
+  theme_nexer()
+```
+
+::: {.units}
+Index, 2021 = 12
+:::
+
+::::
+
+:::: {.column width="45%"}
+
+#### Key drivers
+
+- Tooling became cheap enough to trial without a business case
+- Procurement cycles shortened from nine months to about six weeks
+- Internal champions replaced central mandates
+
+::: {.takeaway}
+The gap is a **distribution** problem, not a capability one.
+:::
+
+::::
+
+:::::
+
+::: {.source}
+[Note:]{.label} Index rebased to 2021. &nbsp; [Source:]{.label} Internal benchmark; sector survey 2025
+:::
+
+::: {.notes}
+This is the standard workhorse slide: chart left at 55%, narrative right at 45%,
+each column with its own noun-phrase header. Read the action title aloud and the
+chart should be the proof of exactly that sentence — nothing more.
+:::
+
+## By the numbers
+
+### Four figures set the scale of the opportunity
+
+::: {.stats}
+
+::: {.stat}
+[82 M€]{.figure} [Cost saved]{.label}
+:::
+
+::: {.stat}
+[16]{.figure} [Countries]{.label}
+:::
+
+::: {.stat}
+[2 450]{.figure} [Employees]{.label}
+:::
+
+::: {.stat}
+[~6 wks]{.figure} [Time to value]{.label}
+:::
+
+:::
+
+::: {.takeaway}
+Every figure on this slide is sourced below. A number without a base is decoration.
+:::
+
+::: {.source}
+[Source:]{.label} Nexer Group annual report 2025; PostNord engagement summary
+:::
+
+::: {.notes}
+The big-number row is lifted from the Nexer corporate deck. Keep it to four at
+most — a fifth turns it into a table and the eye stops ranking them.
+:::
+
+## Options
+
+### Three routes are open, and they differ mainly in who carries the risk
+
+| Route | What it involves | Risk sits with | Time to value |
+|---|---|---|---|
+| **Pilot first** | One team, one workflow, fixed scope | Nexer | ~6 weeks |
+| **Platform first** | Build shared tooling, then onboard teams | Shared | ~6 months |
+| **Buy and adapt** | Licence a vendor product, configure it | Client | ~3 months |
+
+::: {.source}
+[Note:]{.label} Time to value measured from contract signature to first production use.
+:::
+
+::: {.notes}
+Options tables are for decisions, not inventories. Three rows, one differentiating
+column — here it is who carries the risk. If every column differs, you have not
+found the real trade-off yet.
+:::
+
+## Bridge
+
+### Two thirds of the saving comes from a single lever
+
+```{r}
+#| label: chart-bridge
+#| fig-width: 12
+#| fig-height: 4.4
+
+bridge <- tibble(
+  step  = c("Baseline", "Process\nautomation", "Vendor\nconsolidation",
+            "Rework\nreduction", "Target"),
+  value = c(120, -52, -14, -12, 42),
+  kind  = c("total", "delta", "delta", "delta", "total")
+) |>
+  mutate(
+    idx   = row_number(),
+    end   = c(120, 68, 54, 42, 42),
+    start = c(0, 120, 68, 54, 0)
+  )
+
+ggplot(bridge, aes(x = reorder(step, idx))) +
+  geom_rect(
+    aes(xmin = idx - 0.38, xmax = idx + 0.38,
+        ymin = pmin(start, end), ymax = pmax(start, end), fill = kind)
+  ) +
+  geom_text(
+    aes(x = idx, y = pmax(start, end) + 5,
+        label = ifelse(kind == "total", value, paste0(value))),
+    family = nexer_font_body(), size = 5.2, colour = "#4a4a4a"
+  ) +
+  scale_fill_manual(values = c(
+    total = nexer_colours[["purple"]],
+    delta = nexer_colours[["orange"]]
+  )) +
+  scale_x_discrete(limits = bridge$step) +
+  labs(
+    title = "Cost bridge, baseline to target",
+    subtitle = paste(
+      nexer_span("Position", nexer_colours[["purple"]]), "and",
+      nexer_span("movement", nexer_colours[["orange"]])
+    )
+  ) +
+  theme_nexer()
+```
+
+::: {.units}
+€ millions, annualised
+:::
+
+::: {.source}
+[Note:]{.label} Figures rounded to the nearest million; totals may not sum. &nbsp; [Source:]{.label} Engagement model v4
+:::
+
+::: {.notes}
+A bridge answers "where does the number come from". Label the start bar, the end
+bar, and every step between — an unlabelled segment is an invitation to be asked
+about it.
+:::
+
+## Recommendation
+
+### Start with one workflow, prove it in six weeks, then decide on the platform
+
+::: {.incremental}
+
+- **Weeks 1–2** — pick the workflow with the clearest baseline and the least integration
+- **Weeks 3–5** — build in the open, with the receiving team in the room
+- **Week 6** — measure against the baseline; publish the result either way
+
+:::
+
+::: {.takeaway}
+The decision this deck asks for is the **six-week pilot**, not the platform.
+:::
+
+[[Detail on the pilot]{.button}](#sec-appendix)
+
+::: {.notes}
+Close on the ask, stated as one sentence, with the timeline that makes it
+credible. Everything else belongs in the appendix.
+:::
+
+# Appendix {#sec-appendix background-color="#000000" visibility="uncounted"}
+
+## Appendix
+
+### Layout reference {visibility="uncounted"}
+
+::::: {.columns}
+
+:::: {.column width="50%"}
+
+Syntax that earns its place:
+
+- `## Kicker` then `### Action title`
+- `::: {.stats}` with `[42]{.figure} [Label]{.label}`
+- `::: {.takeaway}` for the bold lead-in
+- `::: {.units}` under a chart
+- `::: {.source}` for the bottom rail
+- `[text]{.chip}` and `[text]{.chip .accent}`
+
+::::
+
+:::: {.column width="50%"}
+
+Per-slide attributes:
+
+- `{background-color="#5A1F9F"}` — statement slide
+- `{background-image="assets/swirl-dark.jpg"}` — divider
+- `{.smaller}` / `{.scrollable}` — dense slides
+- `{visibility="uncounted"}` — appendix
+- `{visibility="hidden"}` — parked
+
+[Nexer purple]{.chip} [Highlight]{.chip .accent}
+
+::::
+
+:::::
+
+::: {.notes}
+Keep this slide in the deck while drafting and delete it before presenting.
+:::
