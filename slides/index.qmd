@@ -1,0 +1,17 @@
+---
+title: "Slides"
+listing:
+  # Recursive by default, hence the negation: tests/ are kit fixtures, not decks.
+  contents: ["*.qmd", "!tests/**"]
+  type: grid
+  sort: "date desc"
+  fields: [image, date, title, description]
+  # Quarto cannot auto-extract a preview from a Reveal.js deck (it looks for
+  # `main.content`, which a deck has no such thing as), so cards fall back to
+  # this unless a deck sets its own `image:`.
+  image-placeholder: assets/swirl-dark.jpg
+page-layout: full
+---
+
+Every deck in this project. Each card opens the Reveal.js version; the editable
+PowerPoint is in `reports/`.

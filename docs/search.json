@@ -1,0 +1,58 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Slides",
+    "section": "",
+    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 10, 2026\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "template.html#context",
+    "href": "template.html#context",
+    "title": "Deck title goes here",
+    "section": "Context",
+    "text": "Context\nStatement slides carry one sentence and nothing else\n\n\nNexer purple, one line, no evidence. This is a beat, not an argument."
+  },
+  {
+    "objectID": "template.html#market-context",
+    "href": "template.html#market-context",
+    "title": "Deck title goes here",
+    "section": "Market context",
+    "text": "Market context\nAdoption has grown for three years but the gap to peers is widening\n\n\n\n\n\n\n\n\n\n\n\n\nIndex, 2021 = 12\n\n\nKey drivers\n\nTooling became cheap enough to trial without a business case\nProcurement cycles shortened from nine months to about six weeks\nInternal champions replaced central mandates\n\n\nThe gap is a distribution problem, not a capability one.\n\n\n\nNote: Index rebased to 2021.   Source: Internal benchmark; sector survey 2025\n\n\nThis is the standard workhorse slide: chart left at 55%, narrative right at 45%, each column with its own noun-phrase header. Read the action title aloud and the chart should be the proof of exactly that sentence — nothing more."
+  },
+  {
+    "objectID": "template.html#by-the-numbers",
+    "href": "template.html#by-the-numbers",
+    "title": "Deck title goes here",
+    "section": "By the numbers",
+    "text": "By the numbers\nFour figures set the scale of the opportunity\n\n\n82 M€ Cost saved\n\n\n16 Countries\n\n\n2 450 Employees\n\n\n~6 wks Time to value\n\n\n\nEvery figure on this slide is sourced below. A number without a base is decoration.\n\n\nSource: Nexer Group annual report 2025; PostNord engagement summary\n\n\nThe big-number row is lifted from the Nexer corporate deck. Keep it to four at most — a fifth turns it into a table and the eye stops ranking them."
+  },
+  {
+    "objectID": "template.html#options",
+    "href": "template.html#options",
+    "title": "Deck title goes here",
+    "section": "Options",
+    "text": "Options\nThree routes are open, and they differ mainly in who carries the risk\n\n\n\n\n\n\n\n\n\nRoute\nWhat it involves\nRisk sits with\nTime to value\n\n\n\n\nPilot first\nOne team, one workflow, fixed scope\nNexer\n~6 weeks\n\n\nPlatform first\nBuild shared tooling, then onboard teams\nShared\n~6 months\n\n\nBuy and adapt\nLicence a vendor product, configure it\nClient\n~3 months\n\n\n\n\nNote: Time to value measured from contract signature to first production use.\n\n\nOptions tables are for decisions, not inventories. Three rows, one differentiating column — here it is who carries the risk. If every column differs, you have not found the real trade-off yet."
+  },
+  {
+    "objectID": "template.html#bridge",
+    "href": "template.html#bridge",
+    "title": "Deck title goes here",
+    "section": "Bridge",
+    "text": "Bridge\nTwo thirds of the saving comes from a single lever\n\n\n€ millions, annualised\n\n\nNote: Figures rounded to the nearest million; totals may not sum.   Source: Engagement model v4\n\n\nA bridge answers “where does the number come from”. Label the start bar, the end bar, and every step between — an unlabelled segment is an invitation to be asked about it."
+  },
+  {
+    "objectID": "template.html#recommendation",
+    "href": "template.html#recommendation",
+    "title": "Deck title goes here",
+    "section": "Recommendation",
+    "text": "Recommendation\nStart with one workflow, prove it in six weeks, then decide on the platform\n\nWeeks 1–2 — pick the workflow with the clearest baseline and the least integration\nWeeks 3–5 — build in the open, with the receiving team in the room\nWeek 6 — measure against the baseline; publish the result either way\n\n\nThe decision this deck asks for is the six-week pilot, not the platform.\n\nDetail on the pilot\n\nClose on the ask, stated as one sentence, with the timeline that makes it credible. Everything else belongs in the appendix."
+  },
+  {
+    "objectID": "template.html#appendix",
+    "href": "template.html#appendix",
+    "title": "Deck title goes here",
+    "section": "Appendix",
+    "text": "Appendix\nLayout reference\n\n\nSyntax that earns its place:\n\n## Kicker then ### Action title\n::: {.stats} with [42]{.figure} [Label]{.label}\n::: {.takeaway} for the bold lead-in\n::: {.units} under a chart\n::: {.source} for the bottom rail\n[text]{.chip} and [text]{.chip .accent}\n\n\nPer-slide attributes:\n\n{background-color=\"#5A1F9F\"} — statement slide\n{background-image=\"assets/swirl-dark.jpg\"} — divider\n{.smaller} / {.scrollable} — dense slides\n{visibility=\"uncounted\"} — appendix\n{visibility=\"hidden\"} — parked\n\nNexer purple Highlight\n\n\nKeep this slide in the deck while drafting and delete it before presenting."
+  }
+]

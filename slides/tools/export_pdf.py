@@ -95,6 +95,23 @@ def wants_pdf(qmd: Path) -> bool:
     return bool(front and re.search(r"^export-pdf:\s*true\s*$", front.group(1), re.M))
 
 
+def source_of(html: Path) -> Path:
+    """The .qmd that produced this output.
+
+    In a project the two are not siblings: the deck is at `template.qmd` and
+    its output at `_site/template.html`, so the output directory has to be
+    stripped off first. Outside a project they do sit side by side.
+    """
+    out_dir = os.environ.get("QUARTO_PROJECT_OUTPUT_DIR")
+    if out_dir:
+        try:
+            rel = html.resolve().relative_to(Path(out_dir).resolve())
+            return rel.with_suffix(".qmd")
+        except ValueError:
+            pass          # not under the output dir after all
+    return html.with_suffix(".qmd")
+
+
 def opted_in_outputs() -> list[Path]:
     """The HTML this render produced, filtered to decks that asked for a PDF.
 
@@ -106,7 +123,7 @@ def opted_in_outputs() -> list[Path]:
         html
         for line in listed.splitlines()
         if (html := Path(line.strip())).suffix == ".html"
-        and wants_pdf(html.with_suffix(".qmd"))
+        and wants_pdf(source_of(html))
     ]
 
 

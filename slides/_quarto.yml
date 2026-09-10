@@ -1,12 +1,22 @@
-# Makes this directory a Quarto project, so _brand.yml and _extensions/nexer
-# resolve from subdirectories too (tests/ could not see the extension without
-# this).
+# The kit is a Quarto *website* project: every deck under slides/ renders to
+# _site/, and tools/publish.py then lifts the site into ../docs/ (GitHub Pages)
+# and the .pptx/.pdf exports into ../reports/ (what you send people).
+#
+# Being a project is also what lets _brand.yml and _extensions/nexer resolve
+# from subdirectories -- tests/ could not see the extension without it.
 project:
-  type: default
-  # Every .qmd, at any depth -- so a deck in its own folder needs no edit here.
-  # Scoped to .qmd on purpose: a bare project renders every .md it finds, which
-  # means CLAUDE.md and every skills/*/SKILL.md become stray HTML.
-  render:
-    - "**/*.qmd"
-  # Decks opt in to a PDF with `export-pdf: true` in their own front matter.
-  post-render: python tools/export_pdf.py --post-render
+  type: website
+  output-dir: _site
+  # No `render:` list on purpose. A file left out of it cannot be rendered by
+  # name either ("Unable to read the extension 'nexer'"), which would put the
+  # tests out of reach; index.qmd's listing filters them out instead.
+  post-render:
+    # Decks opt in to a PDF with `export-pdf: true` in their own front matter.
+    - python tools/export_pdf.py --post-render
+    # Last: moves the .pptx/.pdf to ../reports/ and the site to ../docs/.
+    - python tools/publish.py
+
+website:
+  title: "Slides"
+  # A listing page is the whole site; site-wide search would only index decks.
+  search: false

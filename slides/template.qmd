@@ -3,6 +3,7 @@ title: "Deck title goes here"
 subtitle: "A short scoping line — who this is for and what it decides"
 author: "Jonathan Jayes"
 date: today
+description: "What this deck argues, in one line, for the listing card."
 format:
   nexer-revealjs: default
   nexer-pptx: default      # same source, editable PowerPoint
