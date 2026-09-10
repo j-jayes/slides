@@ -1,12 +1,19 @@
 {
   "name": "slides",
-  "description": "Nexer-branded Quarto Reveal.js and PowerPoint slide kit, plus the skills for building a deck and working on the code around it.",
-  "version": "1.0.0",
+  "description": "Ten Claude Code skills for building slide decks and working on the code around them: deck structure, Nexer branding and PowerPoint export, McKinsey-style rigour, plus TDD, manual testing, git discipline and more. The Quarto slide kit itself is the repo, not the plugin.",
+  "version": "2.0.0",
   "author": {
     "name": "Jonathan Jayes",
     "email": "jonathan.jayes@nexergroup.com"
   },
   "homepage": "https://github.com/j-jayes/slides",
   "repository": "https://github.com/j-jayes/slides",
-  "keywords": ["quarto", "revealjs", "powerpoint", "slides", "nexer", "presentations"]
+  "keywords": [
+    "quarto",
+    "revealjs",
+    "powerpoint",
+    "slides",
+    "nexer",
+    "presentations"
+  ]
 }
