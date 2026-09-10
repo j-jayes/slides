@@ -1,7 +1,15 @@
-# `quarto use template` copies every non-hidden file. The skills are installed
-# as a Claude Code plugin, not copied into a deck folder; docs/ and _site/ are
-# this repo's own rendered output; tests/ exercise the kit, not a deck.
+# `quarto use template` copies every file that is not excluded here or by
+# Quarto's own built-ins (README.md, LICENSE, and top-level dotfiles). Keep it
+# to what a new deck folder needs.
+#
+# The skills install as a Claude Code plugin rather than being vendored; docs/
+# and reports/ are this repo's own published output; tests/ exercise the kit,
+# not a deck. Nested dotfiles are not covered by Quarto's `.*` built-in, which
+# is anchored at the root, so the caches are listed explicitly.
 skills/
 docs/
-slides/_site/
+reports/
 slides/tests/
+slides/_site/
+slides/.quarto/
+slides/tools/__pycache__/

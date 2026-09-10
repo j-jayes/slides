@@ -1,6 +1,6 @@
 """Export a rendered Reveal.js deck to PDF with headless Chrome.
 
-    python tools/export_pdf.py my-deck.html                    # one deck
+    python tools/export_pdf.py _site/my-deck.html              # one deck
     python tools/export_pdf.py --post-render                   # every deck that opts in
 
 Quarto has no PDF output for revealjs. The documented route is to open the deck

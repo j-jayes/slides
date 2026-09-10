@@ -1,7 +1,7 @@
 """Report, or assert, which layout each slide of a rendered .pptx landed on.
 
-    python tools/check_pptx.py my-deck.pptx                    # report
-    python tools/check_pptx.py tests/reference-smoke.pptx --smoke   # assert
+    python tools/check_pptx.py ../reports/my-deck.pptx                  # report
+    python tools/check_pptx.py _site/tests/reference-smoke.pptx --smoke # assert
 
 A render can succeed while silently falling back to pandoc's default layouts,
 which surfaces as a styling mystery days later. The --smoke form turns that into

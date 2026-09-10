@@ -140,9 +140,9 @@ section, linked from the slide that provokes the question:
 2. Build the evidence for each title. If you cannot find evidence, the title is a
    claim you cannot support: cut it or soften it.
 3. Write the notes as narration.
-4. Render and *look at it* — `quarto render deck.qmd`, then page through. Use
-   the kit's `tools/shoot_slides.py` to screenshot slides if you cannot open a
-   browser.
+4. Render and *look at it* — `quarto render deck.qmd` from `slides/`, then page
+   through `_site/deck.html`. Use the kit's `tools/shoot_slides.py` to
+   screenshot slides if you cannot open a browser.
 
 ## Branding
 

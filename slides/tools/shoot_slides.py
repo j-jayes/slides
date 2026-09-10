@@ -2,8 +2,8 @@
 
 Verification aid: a deck that renders is not the same as a deck that looks right.
 
-    python tools/shoot_slides.py template.html market-context bridge
-    python tools/shoot_slides.py template.html --all
+    python tools/shoot_slides.py _site/template.html market-context bridge
+    python tools/shoot_slides.py _site/template.html --all
 
 Slides are addressed by their section id (the heading, slugified), because
 Quarto nests `##` slides vertically under each `#` section and a bare `#/n`

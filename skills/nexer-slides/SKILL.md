@@ -9,34 +9,45 @@ description: >-
 
 # Nexer-branded slides
 
-The kit is the Quarto project containing `_extensions/nexer/` — usually
-`slides/` in a client repo, the repo root in the kit's own. **Every path below is
-relative to it**, so `cd` there first. If the project has no kit yet, create one:
+The kit is the `slides/` directory: the Quarto project holding
+`_extensions/nexer/`. **Every path below is relative to it**, so `cd slides`
+first. If the repo has no kit yet, create one from its root:
 
 ```bash
-quarto use template j-jayes/slides    # name the directory `slides`
+quarto use template j-jayes/slides    # answer NO to "create a subdirectory"
 ```
 
-It renders one source `.qmd` to Reveal.js HTML and to editable PowerPoint, both
-on brand.
+It already contains the `slides/` folder, so saying yes gives you
+`slides/slides/`.
+
+One source `.qmd` renders to Reveal.js HTML and to editable PowerPoint, both on
+brand. A render fills two directories: `../docs/` gets the website (a listing
+page plus the decks, committed, served by GitHub Pages) and `../reports/` gets
+the `.pptx` and any `.pdf` — the files you send people.
 
 Every colour and font role here is lifted from the real corporate deck
-(`temp/Sales presentation 2026.pptx` → `ppt/theme/theme1.xml`, colour scheme
+(`slides/temp/Sales presentation 2026.pptx` → `ppt/theme/theme1.xml`, colour scheme
 "Nexer colors", font scheme "Nexer fonts"). Nothing is invented.
 
 That deck and the co-branding PDF are **not kept in this repo** (~90 MB, and
 nothing at render time needs them). Everything extracted from them -- palette,
 logo, swirl artwork, `nexer-reference.pptx` -- is committed. You only need the
-originals to re-run the build scripts; put them back under `temp/` if so.
+originals to re-run the build scripts; put them back under `slides/temp/` if
+so.
 
 ## Starting a deck
 
-Copy the kit, or work inside it:
+Copy the template, or work inside it:
 
 ```bash
+cd slides
 cp template.qmd my-deck.qmd
-quarto render my-deck.qmd
+quarto render my-deck.qmd     # or bare `quarto render` for every deck
 ```
+
+Give the deck a `description:` in its front matter: that is the text on its card
+on the listing page. An `image:` is optional -- without one the card falls back
+to the swirl artwork.
 
 Front matter is two lines, because the extension carries the rest:
 
@@ -48,8 +59,9 @@ format:
 
 ### Rendering a deck from a subfolder
 
-Keep a client deck in its own folder (`<client>/deck.qmd`); the project renders
-every `.qmd` under it. Two things change:
+Decks normally sit flat in `slides/`. You can keep one in its own folder
+(`<client>/deck.qmd`) instead; the project renders every `.qmd` under `slides/`.
+Two things change:
 
 - Paths in the source are **deck-relative**: `../assets/swirl-dark.jpg`,
   `source("../R/nexer-ggplot.R")`.
@@ -140,7 +152,8 @@ Headings are **Bw Gradual**, body is **FK Grotesk** — the real Nexer faces. Th
 are commercial, so nothing is redistributed; they are named first in the font
 stack and resolve natively on machines that have them installed (Nexer laptops
 do). **Outfit** and **Inter** load from Google Fonts as the fallback everywhere
-else. The stylesheet link is in `_extensions/nexer/_extension.yml` —
+else. The stylesheet link is in `_extensions/nexer/_extension.yml` (pptx uses
+the real faces from the reference doc's theme, so it needs no such link) —
 Quarto's `_brand.yml` sets font *names* but does not fetch `source: google`
 files for revealjs, so the link is explicit.
 
@@ -151,7 +164,7 @@ registered, and without it you get one warning per label.
 
 ## Logo rules
 
-From the co-branding guidelines (`temp/Co-Branding Nexer.pdf`):
+From the co-branding guidelines (`slides/temp/Co-Branding Nexer.pdf`):
 
 - Clear space around the logotype equals **1× the logotype's height**, all sides.
 - A partner logo **must not be taller than Nexer's** when horizontal.
@@ -164,9 +177,9 @@ is white (dark slides).
 ## Exporting to PowerPoint
 
 `_brand.yml` does **not** apply to pptx — Quarto supports it for html, revealjs,
-dashboard and typst only. PowerPoint is styled by a reference doc built from the
-real Nexer deck. Both are wired into the extension, so declare both formats and
-render:
+dashboard and typst only. PowerPoint gets its type and palette from a reference
+doc built from the real Nexer deck, and its components from `pptx-nexer.lua`.
+Both are wired into the extension, so declare both formats and render:
 
 ```yaml
 format:
@@ -175,48 +188,70 @@ format:
 ```
 
 ```bash
-quarto render my-deck.qmd                                  # both
-python tools/check_pptx.py my-deck.pptx                    # what layouts were used
-powershell -File tools/shoot_pptx.ps1 -Deck my-deck.pptx   # export PNGs and look
+quarto render my-deck.qmd                                            # both
+python tools/check_pptx.py ../reports/my-deck.pptx                   # what layouts were used
+powershell -File tools/shoot_pptx.ps1 -Deck ../reports/my-deck.pptx  # export PNGs and look
 ```
 
-### How the two-tier title maps to PowerPoint
+The HTML lands in `../docs/`, the PowerPoint in `../reports/`. **Look at the
+pptx before you send it.** The `shoot_pptx.ps1` COM open doubles as the
+corruption test, and it attaches to a running PowerPoint rather than quitting
+one, so it is safe to run with decks open.
 
-PowerPoint has one title placeholder, so `pptx-titles.lua` promotes the `###`
-action title into it and drops the `##` kicker. That is also better PowerPoint
-design — the title should carry the takeaway, not the section label.
+### What PowerPoint builds natively
 
-This is not cosmetic. Leaving the `###` in the body makes pandoc read the slide
-as "text then content" and **split any following columns block onto a second,
-untitled slide**. The filter is what keeps the pptx slide count equal to the
-HTML deck's.
+These are real shapes, not a picture of the HTML, so a colleague can retype a
+figure or drag a box:
 
-### What does not survive the trip to PowerPoint
+| Source | PowerPoint |
+|---|---|
+| `## Kicker` + `### Action title` | Purple locator over a hairline rule; action title in the title placeholder |
+| `::: {.stats}` | One text box per figure, spread across the slide |
+| `::: {.takeaway}` | Grey panel with an orange bar |
+| `::: {.source}` and `::: {.units}` | One 9pt rail bottom-left, units first |
+| `[text]{.chip}` | Highlighted small-caps run; orange for `.chip .accent` |
+| `#### Subhead` | Purple small-caps |
+| `{background-color="#5A1F9F"}` | A real coloured slide background |
+
+PowerPoint has one title placeholder, so the filter promotes the `###` into it
+and demotes the `##` to the locator shape. That is not cosmetic: leaving the
+`###` in the body makes pandoc read the slide as "text then content" and **split
+any following columns block onto a second, untitled slide**.
+
+### Placement rules the filter cannot bend
+
+Every shape above is absolutely positioned, because pandoc gives raw OpenXML no
+layout. Nothing reflows, so composition is on you:
+
+- **A `.stats` row goes at the top of the slide**, with nothing after it but a
+  `.takeaway`. Any other body text is drawn underneath it.
+- **A `.takeaway` sits in a fixed band at the bottom** of the slide or of its
+  column. Keep the text above it to about ten lines full width, or five
+  two-line bullets in a column, or they collide.
+- **A `.stats` row cannot share a slide with `.columns`** — pandoc splits the
+  slide at the columns block.
+- **Only palette colours have a background tile.** `background-color` works by
+  swapping in a PNG from `_extensions/nexer/bg/`; an off-palette hex warns and
+  is dropped. Add one with `python tools/build_bg_pngs.py` after editing
+  `_brand.yml`.
+
+### What still does not survive
 
 Say this up front rather than letting it be discovered in a meeting:
 
 - `.fragment` / `.incremental` reveals — everything appears at once.
-- `background-color` / `background-image` on slides — layout backgrounds only.
 - Raw ```` ```{=html} ```` blocks — dropped entirely.
-- `.button` links, `.chip`, `.stats` and `.takeaway` styling — these are CSS,
-  and pptx has no stylesheet. The text survives; the styling does not.
-- `.units` and `.source` move to the **speaker notes**, prefixed `[units]` and
-  `[source]`. Pandoc cannot place any block after a figure or table on the same
-  slide, so leaving them on the face would spawn a stray slide.
-
-- `.chip` rows collapse into a run-on line, because the pill borders were the
-  separator. Join chips with ` · ` so the row still reads as a list in pptx.
+- A **dark `background-color` slide keeps the master's black logo.** The layout
+  carrying the white one cannot be selected from markdown, at any pandoc
+  version. Use dark statement slides sparingly in a deck destined for
+  PowerPoint, or accept it.
+- Image `width`/`height` — pandoc scales every image to fit its placeholder and
+  ignores the attributes. Control the aspect ratio instead.
+- Only the **first two** `.column` divs are used; a third is dropped.
 - A **table inside a `.column` overflows the slide**. The placeholder is half the
   width, every cell wraps, and the rows run off the bottom with no warning. Use a
   numbered or bulleted list for step-by-step content and keep tables full width,
   at six rows or fewer. Screenshot the pptx; this failure is invisible in HTML.
-- Any block **before** a `.columns` block (a `.stats` row, a `.takeaway`) makes
-  pandoc split the slide in two, the second one untitled. Check the slide count
-  with `tools/check_pptx.py` after adding one.
-
-A further pandoc constraint worth knowing: **nothing can follow a figure or
-table on a slide**. If you need a caption under an exhibit in PowerPoint, put it
-in the column beside it.
 
 ### Rebuilding the reference template
 
@@ -227,10 +262,18 @@ python tools/build_reference_pptx.py --verify
 ```
 
 `--verify` checks pandoc's layout contract, placeholder geometry and idx
-hygiene, that every relationship target resolves, and the part counts pandoc's
-own globbing depends on. If it passes but PowerPoint still complains, render
-`tests/reference-smoke.qmd` and open the result — that exercises all seven
-layouts.
+hygiene, that the theme's hyperlink colour is visible on the light master, that
+every relationship target resolves, and the part counts pandoc's own globbing
+depends on. If it passes but PowerPoint still complains, run the regressions:
+
+```bash
+python -m unittest discover -s tests
+```
+
+`tests/reference-smoke.qmd` exercises all seven pandoc layouts;
+`tests/pptx-components.qmd` exercises every component above, and
+`test_pptx_components.py` asserts the slide count, the layout of each slide, the
+shapes present by name, and that the raw XML parses.
 
 ## Related skills
 
