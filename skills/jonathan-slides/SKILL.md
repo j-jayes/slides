@@ -32,8 +32,28 @@ Every content slide has a **locator** and a **takeaway**:
 - `##` is the **locator**: 1–3 words. Which section, paper, or workstream am I in?
   It repeats across consecutive slides on purpose — that repetition is what makes
   a long deck navigable.
-- `###` is the **takeaway**: a full sentence stating what the audience should
-  conclude *from this slide*. Not a topic label.
+- `###` is the **takeaway**: the finding itself, as a full sentence with a verb.
+  Not what the slide is *about* — what it *says*.
+
+That distinction is the whole game, so be literal about it. A topic label names
+the subject and stops. A takeaway commits to a claim, and someone could disagree
+with it.
+
+| Topic label | Takeaway |
+|---|---|
+| Grid rollout | The grid followed a straight line across the country between the two power plants |
+| Regression methods | We use OLS to estimate the relationship between education and income |
+| Adoption | Adoption has grown for three years but the gap to peers is widening |
+
+The test: cover the slide and read the `###` alone. If it still tells you
+something, it is a takeaway. If you have to look at the chart to find out what
+was meant, it is a label.
+
+This holds for methods, data and background slides, not just results. "Data" is
+a label; "The sample is every parish census from 1900 to 1930, linked by name and
+birth year" is a takeaway, and it answers the question the audience was about to
+ask anyway. A methods slide whose title states the estimator saves you saying it
+out loud.
 
 The Nexer template styles `##` as a small purple kicker and `###` as the large
 action title, so following this habit produces the right hierarchy automatically.
