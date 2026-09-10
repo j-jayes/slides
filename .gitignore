@@ -1,13 +1,14 @@
-# Rendered output and caches -- regenerate with `quarto render`
-*.html
-*_files/
+# Rendered output and caches -- regenerate with `quarto render`. The website
+# renders to slides/_site/ and is published from there into docs/ (committed)
+# and reports/ by tools/publish.py.
+/slides/_site/
 .quarto/
 **/*.quarto_ipynb
 
 # Generated decks. The reference doc is the exception: it is a build artefact of
 # tools/build_reference_pptx.py, but decks need it without running the build.
 *.pptx
-!_extensions/nexer/nexer-reference.pptx
+!/slides/_extensions/nexer/nexer-reference.pptx
 
 # Rendered PDF (chrome --print-to-pdf), a build output like the others above
 *.pdf
@@ -32,13 +33,11 @@ desktop.ini
 ~$*
 
 # Written by Quarto with an absolute path to the local Quarto install.
-/.luarc.json
+.luarc.json
 
 # Source material the kit was derived from: the Nexer corporate deck, the
 # co-branding guidelines and the McKinsey reports. Deliberately not in the repo
 # -- ~108 MB, and nothing at render time needs them.
-/temp/
+/slides/temp/
 /temp-mckinsey/
 /temp-jonathan-slides-example/
-
-/.quarto/

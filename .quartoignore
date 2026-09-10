@@ -1,3 +1,7 @@
 # `quarto use template` copies every non-hidden file. The skills are installed
-# as a Claude Code plugin, not copied into a deck folder.
+# as a Claude Code plugin, not copied into a deck folder; docs/ and _site/ are
+# this repo's own rendered output; tests/ exercise the kit, not a deck.
 skills/
+docs/
+slides/_site/
+slides/tests/
