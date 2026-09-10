@@ -34,5 +34,9 @@ contributes:
       # heading followed by a non-heading block, and a leading HTML comment
       # makes `#` qualify -- turning section dividers into content slides.
       slide-level: 2
+      # Builds the branded components -- stat row, takeaway, chips, source
+      # rail, coloured backgrounds -- as raw OpenXML shapes. Runs at
+      # post-quarto so nothing downstream unwraps the figures it relies on.
       filters:
-        - pptx-titles.lua
+        - at: post-quarto
+          path: pptx-nexer.lua

@@ -53,6 +53,13 @@ SRC_MASTER = 2
 SRC_THEME = 2
 MASTER_LOGO_RID = "rId22"   # -> ../media/image1.emf, the white wordmark
 
+# Nexer's theme is built for white-on-black, so its <a:hlink> is #FFFFFF. On
+# the light master built below that makes every link in a deck white on white:
+# the text is in the file and invisible on the slide. _brand.yml sets the link
+# colour to the Nexer purple, so match it, with the lighter purple for
+# followed links.
+LINK, FOLLOWED_LINK = "5A1F9F", "AA4BF4"
+
 # (output index, <p:cSld name>, source layout, tone)
 #
 # The first seven names are what pandoc looks up. The last four are not
@@ -380,6 +387,16 @@ def build_presentation(xml: str) -> str:
     return xml
 
 
+def fix_theme_links(xml: str) -> str:
+    """Recolour the theme's hyperlink pair for a light master. See LINK."""
+    return re.sub(
+        r"<a:hlink><a:srgbClr val=\"[0-9A-Fa-f]{6}\"/></a:hlink>"
+        r"<a:folHlink><a:srgbClr val=\"[0-9A-Fa-f]{6}\"/></a:folHlink>",
+        f'<a:hlink><a:srgbClr val="{LINK}"/></a:hlink>'
+        f'<a:folHlink><a:srgbClr val="{FOLLOWED_LINK}"/></a:folHlink>',
+        xml, count=1)
+
+
 def rels_for_layout(src_rels: str) -> str:
     """Repoint a layout's rels at slideMaster1 and drop dangling targets."""
     return re.sub(r'Target="\.\./slideMasters/slideMaster\d+\.xml"',
@@ -434,7 +451,8 @@ def build() -> None:
     parts["ppt/slideMasters/_rels/slideMaster1.xml.rels"] = "".join(master_rels).encode("utf8")
 
     # --- themes ------------------------------------------------------------
-    parts["ppt/theme/theme1.xml"] = zin.read(f"ppt/theme/theme{SRC_THEME}.xml")
+    parts["ppt/theme/theme1.xml"] = fix_theme_links(
+        zin.read(f"ppt/theme/theme{SRC_THEME}.xml").decode("utf8")).encode("utf8")
     notes_rels = zin.read("ppt/notesMasters/_rels/notesMaster1.xml.rels").decode("utf8")
     notes_theme = re.search(r"theme/(theme\d+\.xml)", notes_rels).group(1)
     parts["ppt/theme/theme2.xml"] = zin.read(f"ppt/theme/{notes_theme}")
@@ -572,7 +590,13 @@ def verify(path: Path) -> list[str]:
             if resolved not in names:
                 problems.append(f"{n}: dangling target {target} -> {resolved}")
 
-    # 4. counts pandoc's dist-archive glob depends on
+    # 4. links must be visible on the light master
+    theme = z.read("ppt/theme/theme1.xml").decode("utf8")
+    if f'<a:hlink><a:srgbClr val="{LINK}"/>' not in theme:
+        problems.append(f"theme hyperlink colour is not #{LINK}; links will be "
+                        "invisible on the light master")
+
+    # 5. counts pandoc's dist-archive glob depends on
     n_layouts = len(layouts)
     n_themes = len([n for n in names if re.fullmatch(r"ppt/theme/theme\d+\.xml", n)])
     n_masters = len([n for n in names if re.fullmatch(r"ppt/slideMasters/slideMaster\d+\.xml", n)])

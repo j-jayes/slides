@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Slides",
-    "section": "",
-    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 10, 2026\n\n\n\n\n\n\nNo matching items"
-  },
-  {
     "objectID": "template.html#context",
     "href": "template.html#context",
     "title": "Deck title goes here",
@@ -54,5 +47,12 @@
     "title": "Deck title goes here",
     "section": "Appendix",
     "text": "Appendix\nLayout reference\n\n\nSyntax that earns its place:\n\n## Kicker then ### Action title\n::: {.stats} with [42]{.figure} [Label]{.label}\n::: {.takeaway} for the bold lead-in\n::: {.units} under a chart\n::: {.source} for the bottom rail\n[text]{.chip} and [text]{.chip .accent}\n\n\nPer-slide attributes:\n\n{background-color=\"#5A1F9F\"} — statement slide\n{background-image=\"assets/swirl-dark.jpg\"} — divider\n{.smaller} / {.scrollable} — dense slides\n{visibility=\"uncounted\"} — appendix\n{visibility=\"hidden\"} — parked\n\nNexer purple Highlight\n\n\nKeep this slide in the deck while drafting and delete it before presenting."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Slides",
+    "section": "",
+    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 10, 2026\n\n\n\n\n\n\nNo matching items"
   }
 ]
