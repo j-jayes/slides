@@ -4,5 +4,11 @@
     "items": [
       "/template.html"
     ]
+  },
+  {
+    "listing": "/index.pptx",
+    "items": [
+      "/template.html"
+    ]
   }
 ]

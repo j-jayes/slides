@@ -107,6 +107,7 @@ as `/slides:nexer-slides` or triggered automatically by what you ask for.
 | `slides/_extensions/nexer/` | Both formats: `_extension.yml`, `nexer.scss`, `pptx-nexer.lua`, `bg/` and `nexer-reference.pptx`. |
 | `slides/assets/` | Logo (black and white), favicon, swirl backgrounds. |
 | `slides/R/nexer-ggplot.R` | `theme_nexer()`, the chart palette, and `nexer_span()` for coloured-subtitle legends. |
+| `slides/R/nexer-diagrams.R` | `row_of()`, `nexer_boxes()` and friends — box-and-arrow diagrams that export to PowerPoint. |
 | `slides/tools/` | Build, publish and verification scripts (below). |
 | `slides/tests/` | The layout and component regressions. |
 | `skills/` | The Claude Code skills, shipped as the `slides` plugin. |
@@ -155,13 +156,14 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Ten skills ship in the plugin. Three are about decks:
+Eleven skills ship in the plugin. Four are about decks:
 
 | Skill | What it covers |
 |---|---|
 | `jonathan-slides` | Structure — two-tier titles, evidence over prose, notes as narration. |
 | `nexer-slides` | Branding and export — palette, logo rules, what PowerPoint does with each component. |
 | `mckinsey-slides` | Rigour — action-title grammar, the ghost deck, sourcing and chart conventions. |
+| `ggplot-diagrams` | Diagrams — box-and-arrow exhibits drawn in ggplot, so they survive the PowerPoint export. |
 
 The other seven are general engineering practice: `tdd`, `manual-testing`,
 `first-run-the-tests`, `git-discipline`, `walkthrough`, `subagent-fanout` and
