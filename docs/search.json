@@ -53,6 +53,13 @@
     "href": "index.html",
     "title": "Slides",
     "section": "",
-    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 10, 2026\n\n\n\n\n\n\nNo matching items"
+    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 11, 2026\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "template.html#target-state",
+    "href": "template.html#target-state",
+    "title": "Deck title goes here",
+    "section": "Target state",
+    "text": "Target state\nThree capabilities are in place and two are missing, and the gaps are all foundational\n\n\nNote: Dashed boxes are capabilities that do not exist yet, not ones that exist and underperform.\n\n\nDiagrams are drawn with ggplot rather than Mermaid, because a knitr figure is the one shape PowerPoint keeps on a single slide. See the ggplot-diagrams skill.\nA diagram slide carries no columns and no stat row — both make pandoc split the slide in the pptx export, and the diagram loses its rail."
   }
 ]

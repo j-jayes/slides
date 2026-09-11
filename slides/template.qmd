@@ -21,6 +21,7 @@ execute:
 ```{r}
 #| label: setup
 source("R/nexer-ggplot.R")
+source("R/nexer-diagrams.R")   # row_of(), nexer_boxes() and friends
 nexer_use_fonts()   # register Outfit/Inter so charts match the slide type
 library(ggplot2)
 library(dplyr)
@@ -239,6 +240,77 @@ ggplot(bridge, aes(x = reorder(step, idx))) +
 A bridge answers "where does the number come from". Label the start bar, the end
 bar, and every step between — an unlabelled segment is an invitation to be asked
 about it.
+:::
+
+## Target state
+
+### Three capabilities are in place and two are missing, and the gaps are all foundational
+
+```{r}
+#| label: diagram-capability
+#| fig-width: 12
+#| fig-height: 4.2
+
+# Boxes are placed on an explicit grid -- x, y is the BOTTOM-LEFT corner.
+# row_of() divides the band so widths never have to be typed by hand.
+steering <- row_of("Steering group: standards, funding and prioritisation",
+                   y = 3.65, h = 0.7,
+                   fill = nexer_colours[["purple"]], ink = "white")
+
+teams <- row_of(c("Customer journeys", "Operations", "Corporate functions"),
+                y = 1.70, h = 0.85,
+                fill = nexer_colours[["purple_light"]], ink = "white")
+
+foundations <- row_of(c(
+  "Data platform\nstorage and modelling",
+  "Integration layer\nAPIs to the core systems",
+  "Access and identity\nper-service permissions",
+  "Monitoring\nquality, usage and cost"
+), y = 0.40, h = 1.0)
+
+# One row, sliced: the first two are solid, the last two dashed. Drawing them
+# from the same row_of() is what keeps every box on one grid.
+have <- foundations[1:2, ]
+missing <- foundations[3:4, ]
+
+# Arrows are drawn FIRST so the boxes cover their ends.
+arrows <- data.frame(
+  x = teams$x + teams$w / 2, xend = teams$x + teams$w / 2,
+  y = 3.55, yend = 2.65
+)
+
+bands <- data.frame(
+  x = 1.95,
+  y = c(4.00, 2.12, 0.90),
+  label = c("Sets the rules", "Owns the outcome", "Runs on these\nfoundations")
+)
+
+ggplot() +
+  nexer_arrows(arrows) +
+  nexer_boxes(steering, size = 4.6, bold = TRUE) +
+  nexer_boxes(teams, size = 4.4, bold = TRUE) +
+  nexer_boxes(have, size = 3.7) +
+  nexer_ghost_boxes(missing, size = 3.7) +
+  nexer_band_labels(bands, size = 3.9) +
+  labs(subtitle = paste0(
+    nexer_span("Solid: in place today", nexer_colours[["purple"]]),
+    " &nbsp; · &nbsp; ",
+    nexer_span("Dashed: the gaps", nexer_colours[["orange"]])
+  )) +
+  coord_cartesian(xlim = c(0.55, 11.6), ylim = c(0.25, 4.55)) +
+  theme_nexer_diagram()
+```
+
+::: {.source}
+[Note:]{.label} Dashed boxes are capabilities that do not exist yet, not ones that exist and underperform.
+:::
+
+::: {.notes}
+Diagrams are drawn with ggplot rather than Mermaid, because a knitr figure is
+the one shape PowerPoint keeps on a single slide. See the ggplot-diagrams skill.
+
+A diagram slide carries no columns and no stat row — both make pandoc split the
+slide in the pptx export, and the diagram loses its rail.
 :::
 
 ## Recommendation
