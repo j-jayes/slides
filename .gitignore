@@ -41,3 +41,6 @@ desktop.ini
 /slides/temp/
 /temp-mckinsey/
 /temp-jonathan-slides-example/
+
+# API keys, read by bananarama via readRenviron(".env"). Never committed.
+.env

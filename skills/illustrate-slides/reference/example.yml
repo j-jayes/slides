@@ -1,0 +1,61 @@
+# A working example: the six hand-raise slides in the AI education deck's
+# intro/1-what-ai-is.qmd. Copy this file, keep the shape, replace the scenes.
+#
+# `[jonathan]` resolves to jonathan.png beside the YAML: the character sheet,
+# not the photographs it was drawn from. See SKILL.md, "A recurring character".
+#
+#   Rscript -e 'readRenviron("../../../.env"); bananarama::bananarama("intro-1.yml")'
+#
+# The six PNGs are committed, so a re-run generates nothing. Raise `n` and
+# delete a PNG to reroll just that one.
+defaults:
+  aspect-ratio: "4:3"
+  style: >
+    Flat vector editorial illustration, lineless, forms built from blocks of
+    flat colour with soft textured shading, and a prominent grainy risograph
+    texture over the entire image. Palette strictly limited to deep violet
+    #5A1F9F, light violet #AA4BF4, pale blue #D9E6F0 and a warm cream ground,
+    with a single accent of orange #FF5028 used sparingly on one element only.
+    Calm, modern and approachable. One clear subject, uncluttered composition,
+    generous empty space. No text, no letters and no numbers anywhere in the
+    image.
+
+output-dir: intro-1
+
+images:
+  - name: middag
+    description: >
+      [jonathan] standing at an open fridge in a home kitchen late in the day,
+      one hand on the door, working out what to cook from the odds and ends on
+      the shelves: half a cabbage, a few eggs, a tub of yoghurt. He looks
+      thoughtful and amused.
+
+  - name: router
+    description: >
+      [jonathan] crouched on the floor beside a small wifi router with a
+      blinking light, holding a phone in one hand and reaching for the cable
+      with the other. He looks patient rather than annoyed.
+
+  - name: resa
+    description: >
+      [jonathan] at a table leaning over a large open map with a dotted route
+      marked across it, a few small landmark shapes along the way and a coffee
+      cup at his elbow. He looks pleased with the plan.
+
+  - name: sammanfatta
+    description: >
+      [jonathan] at a desk beside a very tall stack of paper that reaches his
+      shoulder, holding up one single sheet and looking at it with relief. The
+      single sheet is blank. Nothing else on the desk.
+
+  - name: traningspass
+    description: >
+      [jonathan] mid workout in an ordinary living room, doing a lunge on a
+      small exercise mat between a sofa and a coffee table, one dumbbell and a
+      water bottle on the floor beside him. Cheerful and slightly out of breath.
+
+  - name: ideer
+    description: >
+      [jonathan] sitting cross legged on the floor surrounded by a loose ring of
+      floating objects representing ideas: a party balloon, a wrapped gift, a
+      lightbulb and a paper aeroplane. He is reaching for one of them, delighted.

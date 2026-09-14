@@ -279,4 +279,5 @@ shapes present by name, and that the raw XML parses.
 
 `jonathan-slides` is the structure — two-tier titles, evidence over prose, notes
 as narration. `mckinsey-slides` is the rigour — action-title grammar, sourcing,
-chart conventions. This skill is the skin.
+chart conventions. `illustrate-slides` is the artwork — AI illustrations that
+hold the palette above. This skill is the skin.
