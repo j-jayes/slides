@@ -112,10 +112,10 @@ nexer_span <- function(text, colour) {
   sprintf("<span style='color:%s;'>**%s**</span>", colour, text)
 }
 
-#' Axis and value labels for large numbers: 1,000  25,000  5m  1.2bn.
+#' Axis and value labels for large numbers: 1,000  25,000  5m  1.2bn  3tn.
 #'
 #' Below a million, comma thousands and `accuracy` decimals; from a million,
-#' one decimal and a lowercase m or bn with a trailing .0 dropped. Negative
+#' one decimal and a lowercase m, bn or tn with a trailing .0 dropped. Negative
 #' numbers keep their sign; NA stays NA. Same function as in the viz-index
 #' skill's R/viz.R, so a deck and a blog chart write numbers the same way.
 #'
@@ -126,9 +126,9 @@ label_short <- function(accuracy = 1) {
     a <- abs(x)
     small <- formatC(round(a / accuracy) * accuracy, format = "f",
                      digits = decimals, big.mark = ",")
-    scaled <- ifelse(a >= 1e9, a / 1e9, a / 1e6)
-    big <- paste0(sub("\\.0$", "", formatC(scaled, format = "f", digits = 1)),
-                  ifelse(a >= 1e9, "bn", "m"))
+    unit <- ifelse(a >= 1e12, 1e12, ifelse(a >= 1e9, 1e9, 1e6))
+    suffix <- ifelse(a >= 1e12, "tn", ifelse(a >= 1e9, "bn", "m"))
+    big <- paste0(sub("\\.0$", "", formatC(a / unit, format = "f", digits = 1)), suffix)
     out <- paste0(ifelse(x < 0, "-", ""), ifelse(a >= 1e6, big, small))
     out[is.na(x)] <- NA
     out

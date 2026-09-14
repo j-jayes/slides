@@ -5,8 +5,8 @@ check_formatters <- function(path) {
   env <- new.env()
   sys.source(path, envir = env)
   short <- env$label_short()
-  got <- short(c(0, 999, 1000, 25000, 999999, 1e6, 1.25e6, 5e6, 1e9, 1.2e9, -3500, -1.2e6, NA))
-  want <- c("0", "999", "1,000", "25,000", "999,999", "1m", "1.2m", "5m", "1bn", "1.2bn",
+  got <- short(c(0, 999, 1000, 25000, 999999, 1e6, 1.25e6, 5e6, 1e9, 1.2e9, 3e12, -3500, -1.2e6, NA))
+  want <- c("0", "999", "1,000", "25,000", "999,999", "1m", "1.2m", "5m", "1bn", "1.2bn", "3tn",
             "-3,500", "-1.2m", NA)
   if (!identical(got, want)) {
     stop(path, ": label_short() gave ", paste(got, collapse = " | "),
