@@ -116,6 +116,23 @@ the report. Fix, re-render, look again.
 - The PNG is larger than 10 KB — an empty panel is not.
 - You looked at it. Not the code: the picture.
 
+## What this checklist actually catches
+
+Every one of the thirty templates in the `viz-*` skills was built, rendered,
+and read against the list above. Six faults came up again and again, and
+none of them is visible in the code:
+
+| Fault | What it looked like |
+|---|---|
+| **A title that outran the data** | "Houston sold twice what Dallas did" against a 1.4× gap; "rose by half" against 75%; "a third more in summer" against 27%. Fix: compute the figure and paste it in, so the claim cannot drift |
+| **A title clipped at the right edge** | Seven of thirty. A markdown title does not wrap; past the panel it is cut with no warning. Fix: `<br>` at a clause boundary |
+| **A claim naming the wrong thing** | A heatmap crediting Austin for a row that was Collin County; a coefficient plot saying "move" over a single term. Fix: derive the name from the same ordering the chart draws |
+| **Colour keyed to sort order** | The line chart gave San Antonio the colour Austin had in the chart beside it, because the palette was indexed by factor position. Fix: `setNames(palette, names)` |
+| **Labels colliding** | Two end labels overprinting on the indexed lines; group sizes landing on the outlier points. Fix: nudge them apart, or move them into the axis labels |
+| **A layer the theme does not reach** | `coord_sf()`'s graticule survives `theme_viz(grid = "none")`; a pie kept its bar-chart axis title. Fix: look, then blank what you see |
+
+Read the picture. Every one of these renders without a warning.
+
 ## Related skills
 
 `viz-index` holds the conventions this checklist enforces; each family skill

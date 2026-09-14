@@ -1,7 +1,7 @@
 {
   "name": "slides",
-  "description": "Eleven Claude Code skills for building slide decks and working on the code around them: deck structure, Nexer branding and PowerPoint export, McKinsey-style rigour, plus TDD, manual testing, git discipline and more. The Quarto slide kit itself is the repo, not the plugin.",
-  "version": "2.1.0",
+  "description": "Twenty-four Claude Code skills for building slide decks and the charts that go in them: deck structure, Nexer branding and PowerPoint export, McKinsey-style rigour, a thirteen-skill ggplot2 data-visualisation family, plus TDD, manual testing, git discipline and more. The Quarto slide kit itself is the repo, not the plugin.",
+  "version": "2.2.0",
   "author": {
     "name": "Jonathan Jayes",
     "email": "jonathan.jayes@nexergroup.com"
@@ -14,6 +14,8 @@
     "powerpoint",
     "slides",
     "nexer",
-    "presentations"
+    "presentations",
+    "ggplot2",
+    "dataviz"
   ]
 }

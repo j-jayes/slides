@@ -106,7 +106,7 @@ as `/slides:nexer-slides` or triggered automatically by what you ask for.
 | `slides/_brand.yml` | Nexer colours, logo and type roles. **The source of truth** — editing a palette entry recolours the deck. |
 | `slides/_extensions/nexer/` | Both formats: `_extension.yml`, `nexer.scss`, `pptx-nexer.lua`, `bg/` and `nexer-reference.pptx`. |
 | `slides/assets/` | Logo (black and white), favicon, swirl backgrounds. |
-| `slides/R/nexer-ggplot.R` | `theme_nexer()`, the chart palette, and `nexer_span()` for coloured-subtitle legends. |
+| `slides/R/nexer-ggplot.R` | `theme_nexer()`, the chart palette, `nexer_span()` for coloured-subtitle legends, and the `label_short()` / `label_pct()` axis formatters. |
 | `slides/R/nexer-diagrams.R` | `row_of()`, `nexer_boxes()` and friends — box-and-arrow diagrams that export to PowerPoint. |
 | `slides/tools/` | Build, publish and verification scripts (below). |
 | `slides/tests/` | The layout and component regressions. |
@@ -132,7 +132,9 @@ for `.column`, 3 for anything inside. Get this wrong and columns silently stack.
 All paths relative to `slides/`.
 
 ```bash
-python -m unittest discover -s tests               # the whole suite
+python -m unittest discover -s tests               # the whole suite (~4 min: the
+                                                   # viz templates each fetch Inter)
+python -m unittest tests.test_viz_templates -k amounts   # one chart family
 python tools/build_bg_pngs.py                      # rebuild the background tiles from _brand.yml
 python tools/build_reference_pptx.py --verify      # rebuild + validate nexer-reference.pptx
 python tools/extract_assets.py                     # re-extract logo/swirls from the corporate deck
@@ -156,7 +158,7 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Eleven skills ship in the plugin. Four are about decks:
+Twenty-four skills ship in the plugin. Four are about decks:
 
 | Skill | What it covers |
 |---|---|
@@ -164,6 +166,30 @@ Eleven skills ship in the plugin. Four are about decks:
 | `nexer-slides` | Branding and export — palette, logo rules, what PowerPoint does with each component. |
 | `mckinsey-slides` | Rigour — action-title grammar, the ghost deck, sourcing and chart conventions. |
 | `ggplot-diagrams` | Diagrams — box-and-arrow exhibits drawn in ggplot, so they survive the PowerPoint export. |
+
+Thirteen are about charts — Claus Wilke's rules plus the habits from
+[interlude-one](https://github.com/j-jayes/interlude-one), codified as runnable
+templates. Start at `viz-index`:
+
+| Skill | What it covers |
+|---|---|
+| `viz-index` | The entry point — which chart answers which question, and the conventions every chart follows. |
+| `viz-amounts` | Sorted horizontal bars, dot plots, top-n facets, heatmaps. |
+| `viz-distributions` | Histograms, densities, boxplots with points, ridgelines. |
+| `viz-proportions` | Filled bars, stacked shares over time, the one permitted pie. |
+| `viz-trends` | Lines labelled at their ends, indices, log axes, slope graphs. |
+| `viz-associations` | Scatter with a stated fit, 2-D bins, the x = y line. |
+| `viz-uncertainty` | Coefficient plots, confidence bands, SD against SE against CI. |
+| `viz-colour` | The three jobs colour does, and a scale for each. |
+| `viz-labels` | Takeaway titles, coloured words as the legend, annotations. |
+| `viz-compound` | Facets with shared scales, patchwork panels. |
+| `viz-maps` | Choropleths of rates on equal-area projections. |
+| `viz-tables` | Wilke's six table rules in gt. |
+| `viz-review` | The checklist you run on the rendered PNG before shipping. |
+
+Their helper file is `skills/viz-index/reference/viz.R`: copy it to `R/viz.R`
+in a project and every template runs. Each ships runnable `reference/*.R`
+scripts, exercised by `tests/test_viz_templates.py`.
 
 The other seven are general engineering practice: `tdd`, `manual-testing`,
 `first-run-the-tests`, `git-discipline`, `walkthrough`, `subagent-fanout` and
