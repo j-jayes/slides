@@ -158,7 +158,7 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Twenty-four skills ship in the plugin. Four are about decks:
+Twenty-five skills ship in the plugin. Five are about decks:
 
 | Skill | What it covers |
 |---|---|
@@ -166,6 +166,7 @@ Twenty-four skills ship in the plugin. Four are about decks:
 | `nexer-slides` | Branding and export — palette, logo rules, what PowerPoint does with each component. |
 | `mckinsey-slides` | Rigour — action-title grammar, the ghost deck, sourcing and chart conventions. |
 | `ggplot-diagrams` | Diagrams — box-and-arrow exhibits drawn in ggplot, so they survive the PowerPoint export. |
+| `illustrate-slides` | Illustration — AI images from a committed YAML file, one style across the deck, one recurring character. |
 
 Thirteen are about charts — Claus Wilke's rules plus the habits from
 [interlude-one](https://github.com/j-jayes/interlude-one), codified as runnable
