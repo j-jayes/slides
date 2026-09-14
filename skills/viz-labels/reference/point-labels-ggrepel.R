@@ -37,8 +37,8 @@ p <- ggplot(cars, aes(weight, mpg)) +
   scale_x_continuous(labels = label_short()) +
   labs(
     title = paste0("The ", lightest$car, " goes ",
-                   round(lightest$mpg / heaviest$mpg, 1), " times as far per gallon as the ",
-                   heaviest$car),
+                   round(lightest$mpg / heaviest$mpg, 1),
+                   " times as far per gallon<br>as the ", heaviest$car),
     subtitle = "Fuel economy against weight, 32 cars from the 1974 Motor Trend test",
     x = "Weight (pounds)", y = "Fuel economy (miles per gallon)",
     caption = "Source: datasets::mtcars (Motor Trend, 1974)"
