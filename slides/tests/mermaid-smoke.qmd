@@ -1,0 +1,53 @@
+---
+title: "Mermaid smoke test"
+description: "Kit fixture: what happens to a Mermaid diagram on the way to PowerPoint."
+format:
+  nexer-revealjs: default
+  nexer-pptx: default
+---
+
+<!--
+  Fixture, not a deck.
+
+      quarto render tests/mermaid-smoke.qmd
+      python tools/check_pptx.py _site/tests/mermaid-smoke.pptx
+      powershell -File tools/shoot_pptx.ps1 -Deck _site/tests/mermaid-smoke.pptx
+
+  FINDING (2026-09-10, Quarto 1.8.25). Mermaid reaches PowerPoint, but not
+  intact. Two defects, both visible in the shot of slide 2:
+
+  1. THE SLIDE SPLITS. Quarto's diagram filter emits the rendered PNG as a
+     block that pandoc's pptx writer breaks before -- so the action title and
+     the diagram land on slide 2, and every shape pptx-nexer.lua builds (the
+     kicker, its rule, the source rail) is pushed onto an untitled slide 3.
+     The filter already defuses this for tables and bare images by wrapping
+     them in a pandoc.Figure; Mermaid output arrives in some other shape and
+     slips past that guard. Fixing it means teaching convert() in
+     pptx-nexer.lua to recognise and wrap it too.
+
+  2. NODE TEXT IS CLIPPED. Headless Chromium lays the boxes out with a font it
+     does not have (the themeVariables fontFamily below), so every label is cut
+     off mid-word: "Intak", "Build on platf", "Scale and monit".
+
+  Until both are fixed, draw diagrams with ggplot2 instead -- the
+  ggplot-diagrams skill and R/nexer-diagrams.R: same palette, same fonts as
+  the charts, and it goes through the image path the filter already handles.
+  Reveal.js renders the Mermaid below correctly -- the defects are
+  PowerPoint-only. Re-run this after a Quarto upgrade: if check_pptx reports
+  two slides, the split is fixed and the skill should say so.
+-->
+
+## Fixture
+
+### A Mermaid flowchart splits the slide in PowerPoint and clips its own node text
+
+```{mermaid}
+%%| fig-width: 12
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#5A1F9F', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#5A1F9F', 'lineColor': '#C8C8C8', 'secondaryColor': '#D9E6F0', 'tertiaryColor': '#F0F0F0', 'fontFamily': 'Inter, Outfit, sans-serif', 'fontSize': '18px'}}}%%
+flowchart LR
+  A[Intake] --> B[Value and risk triage] --> C[Build on platform] --> D[Evaluate vs baseline] --> E[Govern] --> F[Scale and monitor]
+```
+
+::: {.source}
+[Note:]{.label} Fixture only.
+:::

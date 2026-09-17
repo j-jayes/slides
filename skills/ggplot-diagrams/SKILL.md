@@ -48,6 +48,11 @@ two defects, both PowerPoint-only:
 Reveal.js renders Mermaid correctly, which is what makes this expensive to
 discover — the deck looks right until someone opens the `.pptx`.
 
+The fixture is `slides/tests/mermaid-smoke.qmd`. Re-check after a Quarto
+upgrade: `quarto render tests/mermaid-smoke.qmd`, then
+`python tools/check_pptx.py _site/tests/mermaid-smoke.pptx` — three slides
+means the split is still there.
+
 Raw HTML blocks are worse: the pptx writer drops them entirely.
 
 ## The helpers
