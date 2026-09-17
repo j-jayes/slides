@@ -227,7 +227,17 @@ layout. Nothing reflows, so composition is on you:
   `.takeaway`. Any other body text is drawn underneath it.
 - **A `.takeaway` sits in a fixed band at the bottom** of the slide or of its
   column. Keep the text above it to about ten lines full width, or five
-  two-line bullets in a column, or they collide.
+  two-line bullets in a column, or they collide. A full-width table above a
+  takeaway clears the band at **seven one-line rows** plus the header, with room
+  for about one more; rows whose cells wrap use that room faster.
+- **The takeaway band is three lines tall and does not grow.** In a column that
+  is about 25 words; at 40 the text spills out of the panel. Reveal.js grows
+  the box instead, so this only shows in the pptx.
+- **Section divider titles stop at about 60 characters.** PowerPoint sets them
+  in capitals, about twelve to a line, anchored at the bottom: 42 characters is
+  four clean lines, 68 touches the top edge, 75 is cut off. Long single words
+  hyphenate mid-word. Shorten the divider and put the full question in the
+  speaker notes or on the next slide.
 - **A `.stats` row cannot share a slide with `.columns`** — pandoc splits the
   slide at the columns block.
 - **Only palette colours have a background tile.** `background-color` works by

@@ -63,11 +63,13 @@ a box:
 | `#### Subhead` | Purple small-caps |
 | `{background-color="#5A1F9F"}` | A real coloured slide background |
 
-Three placement rules follow from how pandoc lays out a pptx slide, and the
+Placement rules follow from how pandoc lays out a pptx slide, and the
 `nexer-slides` skill spells them out: a stat row goes at the top of the slide
-with nothing but a takeaway after it; a takeaway sits in a fixed band at the
-bottom of its column, so keep the text above it short; and a stat row cannot
-share a slide with `.columns`.
+with nothing but a takeaway after it; a takeaway sits in a fixed three-line band
+at the bottom of its column, so keep the text above it short (seven one-line
+table rows full width) and the takeaway itself to about 25 words in a column; a
+stat row cannot share a slide with `.columns`; and a section divider title over
+about 60 characters runs off the top of the slide.
 
 ## Getting the kit
 
@@ -142,6 +144,7 @@ python tools/check_pptx.py ../reports/my-deck.pptx # which layout each pptx slid
 python tools/shoot_slides.py _site/my-deck.html --all       # screenshot every HTML slide
 powershell -File tools/shoot_pptx.ps1 -Deck ../reports/my-deck.pptx   # export pptx slides to PNG
 python tools/export_pdf.py _site/my-deck.html      # print the deck to PDF via headless Chrome
+python tools/pptx_to_md.py draft.pptx draft.md     # read a pptx (e.g. a client draft) back as Markdown
 ```
 
 `shoot_pptx.ps1` doubles as the corruption test: a malformed package makes
