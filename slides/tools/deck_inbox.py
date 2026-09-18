@@ -49,7 +49,7 @@ TOOLS = Path(__file__).resolve().parent
 
 
 def slug(name: str) -> str:
-    """An ASCII directory name. 'Västerhuset 2.0_förslag' -> 'vasterhuset-2-0-forslag'."""
+    """An ASCII directory name. 'Säljstöd 2.0_förslag' -> 'saljstod-2-0-forslag'."""
     flat = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
     return re.sub(r"-{2,}", "-", re.sub(r"[^a-z0-9]+", "-", flat.lower())).strip("-")
 

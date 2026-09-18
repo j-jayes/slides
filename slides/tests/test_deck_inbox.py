@@ -44,14 +44,14 @@ class IntakeTest(unittest.TestCase):
         self.root = self.tmp / "repo"
         (self.root / "inbox").mkdir(parents=True)
         # The name a colleague actually sends: spaces, a dot, and an umlaut.
-        self.src = make_deck(self.root / "inbox" / "Västerhuset 2.0_förslag.pptx")
+        self.src = make_deck(self.root / "inbox" / "Säljstöd 2.0_förslag.pptx")
         self.work = deck_inbox.intake(self.src, self.root, render=False)
 
     def test_the_work_directory_is_named_in_ascii(self):
         # COM resolves paths through the process locale and Quarto shells out;
         # neither is worth debugging over an umlaut.
-        self.assertEqual("vasterhuset-2-0-forslag", self.work.name)
-        self.assertEqual(self.root / "work" / "vasterhuset-2-0-forslag", self.work)
+        self.assertEqual("saljstod-2-0-forslag", self.work.name)
+        self.assertEqual(self.root / "work" / "saljstod-2-0-forslag", self.work)
         self.assertTrue(str(self.work).isascii())
 
     def test_the_original_is_copied_byte_for_byte_and_left_alone(self):
@@ -66,7 +66,7 @@ class IntakeTest(unittest.TestCase):
         self.assertEqual("template", inv["kind"])
 
     def test_a_change_log_is_started_for_the_colleague(self):
-        self.assertIn("Västerhuset 2.0_förslag.pptx",
+        self.assertIn("Säljstöd 2.0_förslag.pptx",
                       (self.work / "changes.md").read_text(encoding="utf8"))
 
     def test_an_existing_work_directory_is_refused(self):
