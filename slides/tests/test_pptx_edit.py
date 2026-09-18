@@ -342,5 +342,113 @@ class SetTextTest(unittest.TestCase):
                 pptx_edit.set_text(deck, slide=1, text="x", **kwargs)
 
 
+class DeleteAndMoveTest(unittest.TestCase):
+    """Taking a slide out, and putting one somewhere else."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+
+    def deck(self, dialect="powerpoint", **kwargs):
+        return make_deck(self.tmp / f"{dialect}.pptx", dialect=dialect, **kwargs)
+
+    def ids(self, deck):
+        import pptx_diff
+        with zipfile.ZipFile(deck) as z:
+            return list(pptx_diff._slide_ids(z))
+
+    def test_the_slide_and_all_five_registrations_go(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                part = pptx_edit.slide_parts(deck)[1]
+                gone = pptx_edit.delete_slide(deck, 2)
+                self.assertEqual(part, gone["part"])
+                with zipfile.ZipFile(deck) as z:
+                    names = set(z.namelist())
+                self.assertNotIn(part, names)
+                self.assertNotIn(f"ppt/slides/_rels/{Path(part).name}.rels", names)
+                self.assertNotIn(part, pptx_edit.read(deck, "[Content_Types].xml"))
+                self.assertNotIn(Path(part).name,
+                                 pptx_edit.read(deck, "ppt/_rels/presentation.xml.rels"))
+                self.assertEqual([256, 258], self.ids(deck))
+
+    def test_the_notes_page_goes_with_its_slide(self):
+        # Left behind it is an orphan part with a relationship to a slide
+        # that no longer exists, which PowerPoint repairs.
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                gone = pptx_edit.delete_slide(deck, 2)
+                with zipfile.ZipFile(deck) as z:
+                    names = set(z.namelist())
+                self.assertIn("ppt/notesSlides/notesSlide2.xml", gone["also_removed"])
+                self.assertFalse({n for n in names if "notesSlide2" in n})
+                self.assertIn("ppt/notesSlides/notesSlide1.xml", names)
+
+    def test_media_nobody_else_uses_goes_too(self):
+        deck = self.deck(media=True)
+        gone = pptx_edit.delete_slide(deck, 2)          # the slide holding the picture
+        self.assertIn("ppt/media/image1.gif", gone["also_removed"])
+        self.assertEqual([], pptx_diff.validate(deck))
+
+    def test_media_another_slide_still_uses_stays(self):
+        deck = self.deck(media=True)
+        pptx_edit.add_slide(deck, clone=2, after=2)     # a second user of the picture
+        gone = pptx_edit.delete_slide(deck, 2)
+        self.assertNotIn("ppt/media/image1.gif", gone["also_removed"])
+        self.assertEqual([], pptx_diff.validate(deck))
+
+    def test_the_deck_is_still_sound_after_a_delete(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d, media=True)
+                pptx_edit.delete_slide(deck, 1)
+                self.assertEqual([], pptx_diff.validate(deck))
+
+    def test_the_last_slide_cannot_be_deleted(self):
+        deck = self.deck()
+        pptx_edit.delete_slide(deck, 1)
+        pptx_edit.delete_slide(deck, 1)
+        with self.assertRaises(SystemExit) as caught:
+            pptx_edit.delete_slide(deck, 1)
+        self.assertIn("one slide", str(caught.exception))
+
+    def test_moving_reorders_without_touching_a_slide_part(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                before = parts(deck)
+                pptx_edit.move_slide(deck, 1, to=3)
+                self.assertEqual([271, 258, 256], self.ids(deck))
+                after = parts(deck)
+                # Only the running order changed, so only one part may differ.
+                self.assertEqual({"ppt/presentation.xml"},
+                                 {n for n in before if before[n] != after[n]})
+                self.assertEqual(set(before), set(after))
+
+    def test_moving_a_slide_earlier_works_too(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                pptx_edit.move_slide(deck, 3, to=1)
+                self.assertEqual([258, 256, 271], self.ids(deck))
+
+    def test_moving_a_slide_to_where_it_already_is_changes_nothing(self):
+        deck = self.deck()
+        before = deck.read_bytes()
+        pptx_edit.move_slide(deck, 2, to=2)
+        self.assertEqual(before, deck.read_bytes())
+
+    def test_an_out_of_range_move_or_delete_is_refused(self):
+        deck = self.deck()
+        with self.assertRaises(SystemExit):
+            pptx_edit.move_slide(deck, 9, to=1)
+        with self.assertRaises(SystemExit):
+            pptx_edit.move_slide(deck, 1, to=9)
+        with self.assertRaises(SystemExit):
+            pptx_edit.delete_slide(deck, 9)
+
+
 if __name__ == "__main__":
     unittest.main()
