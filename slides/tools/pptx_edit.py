@@ -203,6 +203,90 @@ def add_slide(deck: Path, *, xml: bytes | None = None, clone: int | None = None,
             "cloned_from": source}
 
 
+# A <p:sp> never contains another, so a non-greedy match is exact.
+SHAPE = re.compile(r"<p:sp>.*?</p:sp>", re.S)
+PARA = re.compile(r"<a:p\s*/>|<a:p>.*?</a:p>", re.S)
+RUN = re.compile(r"<a:r>.*?</a:r>", re.S)
+# An <a:rPr> usually has children -- <a:latin/> among them -- so the first
+# "/>" inside it is not its own end. Match the empty and full forms apart.
+RPR = re.compile(r"<a:rPr\b[^>]*/>|<a:rPr\b[^>]*>.*?</a:rPr>", re.S)
+
+
+def set_text(deck: Path, *, slide: int, shape: int, para: int,
+             text: str, flatten: bool = False) -> dict:
+    """Rewrite one paragraph, keeping the formatting it already carries.
+
+    The paragraph becomes a single run wearing the first run's properties.
+    That is what keeps the colleague's type size, weight and typeface --
+    assigning to the text frame wholesale is what loses them.
+    """
+    order = slide_parts(deck)
+    if not 1 <= slide <= len(order):
+        raise SystemExit(f"slide {slide} is outside 1..{len(order)}")
+    part = order[slide - 1]
+    xml = read(deck, part)
+
+    found = next((m for m in SHAPE.finditer(xml)
+                  if re.search(r'<p:cNvPr id="(\d+)"', m.group(0))
+                  and int(re.search(r'<p:cNvPr id="(\d+)"', m.group(0)).group(1)) == shape), None)
+    if found is None:
+        raise SystemExit(f"slide {slide} has no shape with id {shape}; "
+                         f"inventory.json lists the ids")
+    paras = list(PARA.finditer(found.group(0)))
+    if not 0 <= para < len(paras):
+        raise SystemExit(f"shape {shape} has {len(paras)} paragraph(s), so "
+                         f"--para {para} is outside 0..{len(paras) - 1}")
+    old = paras[para].group(0)
+
+    if "<a:fld" in old:
+        raise SystemExit("that paragraph holds a field, whose text PowerPoint "
+                         "generates. Editing it here would be overwritten.")
+    runs = RUN.findall(old)
+    if len(runs) > 1 and not flatten and not _uniform(runs):
+        raise SystemExit(
+            f"the runs in that paragraph are formatted differently, so rewriting it "
+            f"as one run would lose the distinction. Pass --flatten to accept that.")
+
+    new = _one_run(old, runs, text)
+    body = found.group(0)[:paras[para].start()] + new + found.group(0)[paras[para].end():]
+    edit(deck, replace={part: (xml[:found.start()] + body + xml[found.end():]).encode("utf8")})
+    return {"part": part, "shape": shape, "para": para, "text": text}
+
+
+def _uniform(runs: list[str]) -> bool:
+    """Do these runs differ by anything but proofing noise?
+
+    Spell-checking splits a paragraph on err= and dirty= and lang=, which say
+    nothing about how it looks. The client deck has paragraphs in 73 pieces
+    that are all one format underneath.
+    """
+    def strip(run: str) -> str:
+        rPr = RPR.search(run)
+        return re.sub(r'\s(?:err|dirty|lang|smtClean)="[^"]*"', "", rPr.group(0)) if rPr else ""
+    return len(set(strip(r) for r in runs)) == 1
+
+
+def _one_run(old: str, runs: list[str], text: str) -> str:
+    """The paragraph with every run replaced by one carrying `text`."""
+    rPr = ""
+    if runs:
+        match = RPR.search(runs[0])
+        # err= marks a spell-check squiggle on words that are gone now.
+        rPr = re.sub(r'\s(?:err|dirty|smtClean)="[^"]*"', "", match.group(0)) if match else ""
+    escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    # PowerPoint drops a leading or trailing space without this.
+    space = ' xml:space="preserve"' if text != text.strip() else ""
+    run = f"<a:r>{rPr}<a:t{space}>{escaped}</a:t></a:r>"
+
+    if not runs:  # an empty paragraph: put the run before endParaRPr
+        return re.sub(r"(<a:endParaRPr\b|</a:p>)", run + r"\1", old, count=1)
+    # Keep pPr and endParaRPr; the first run becomes the new one, the rest go.
+    out = old.replace(runs[0], run, 1)
+    for extra in runs[1:]:
+        out = out.replace(extra, "", 1)
+    return re.sub(r"<a:br\s*/>", "", out)
+
+
 def _layout_of(z: zipfile.ZipFile, slide: str | None) -> str:
     """The layout a neighbouring slide uses, so a new slide inherits it."""
     if slide is not None:
@@ -289,12 +373,30 @@ def main() -> int:
     new.add_argument("--after", type=int, metavar="N", help="0 puts it first")
     new.add_argument("--layout", help="layout part to bind (default: the neighbour's)")
 
+    edit_text = sub.add_parser("text", help="rewrite one paragraph, keeping its formatting")
+    edit_text.add_argument("deck", type=Path)
+    edit_text.add_argument("--slide", type=int, required=True)
+    edit_text.add_argument("--shape", type=int, required=True,
+                           help="cNvPr id, as inventory.json lists it")
+    edit_text.add_argument("--para", type=int, default=0)
+    edit_text.add_argument("text")
+    edit_text.add_argument("--flatten", action="store_true",
+                           help="accept losing the run-by-run formatting")
+
     args = ap.parse_args()
     if args.cmd == "xml":
         order = slide_parts(args.deck)
         if not 1 <= args.slide <= len(order):
             raise SystemExit(f"slide {args.slide} is outside 1..{len(order)}")
         print(read(args.deck, order[args.slide - 1]))
+        return 0
+
+    if args.cmd == "text":
+        done = set_text(args.deck, slide=args.slide, shape=args.shape, para=args.para,
+                        text=args.text, flatten=args.flatten)
+        print(f"slide {args.slide}, shape {args.shape}, paragraph {args.para}: "
+              f"{done['text']!r}\nre-shoot the deck and look at it -- nothing here "
+              f"can tell whether the new text still fits its box")
         return 0
 
     made = add_slide(args.deck, xml=args.xml.read_bytes() if args.xml else None,
