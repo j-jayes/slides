@@ -65,19 +65,40 @@ def layout_name(z: zipfile.ZipFile, slide: str) -> str:
     return ""
 
 
+def segments(para) -> list[str]:
+    """The paragraph's text, split at every <a:br/>.
+
+    A break is how one paragraph carries a second line -- a subtitle under a
+    title, an author under that. iter() walks in document order, so runs and
+    breaks interleave the way they are written.
+    """
+    segs = [""]
+    for el in para.iter():
+        tag = el.tag.split("}")[1]
+        if tag == "br":
+            segs.append("")
+        elif tag == "t":
+            segs[-1] += el.text or ""
+    return [s for s in (seg.strip() for seg in segs) if s]
+
+
 def paragraphs(el) -> list[str]:
     """Text of every non-empty paragraph under `el`, as Markdown lines."""
     lines = []
     for para in el.iter(f"{{{NS['a']}}}p"):
-        text = "".join(t.text or "" for t in para.iter(f"{{{NS['a']}}}t")).strip()
-        if not text:
+        segs = segments(para)
+        if not segs:
             continue
         ppr = para.find("a:pPr", NS)
         lvl = int(ppr.get("lvl", "0")) if ppr is not None else 0
         bulleted = ppr is not None and ppr.find("a:buNone", NS) is None and (
             lvl > 0 or ppr.find("a:buChar", NS) is not None or ppr.find("a:buAutoNum", NS) is not None
         )
-        lines.append(("  " * lvl + "- " + text) if bulleted else text)
+        first = ("  " * lvl + "- ") if bulleted else ""
+        lines.append(first + segs[0])
+        # Continuation lines sit under the bullet text, which is what keeps
+        # them part of the same list item in Markdown.
+        lines.extend(" " * len(first) + seg for seg in segs[1:])
     return lines
 
 
