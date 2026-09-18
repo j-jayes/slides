@@ -125,10 +125,44 @@ def validate(path: Path) -> list[str]:
                                     f"{notes_owner[notes]} and {part}")
                 notes_owner[notes] = part
 
+        stale = _stale_page_numbers(z)
+        if stale:
+            problems.append(
+                f"note: this deck types its page numbers as text rather than using a "
+                f"slide-number field, and {', '.join(stale)} disagree with their "
+                f"position. Inserting or moving a slide cannot fix them.")
+
         if "sectionLst" in pres:
             problems.append("note: this deck has sections, and nothing here updates them; "
                             "check the section pane after adding or moving a slide")
     return problems
+
+
+def _stale_page_numbers(z: zipfile.ZipFile) -> list[str]:
+    """Slides whose typed-in page number disagrees with where they sit.
+
+    A deck using <a:fld type="slidenum"> renumbers itself and never appears
+    here. One that types the number goes stale the moment anyone inserts a
+    slide -- which is worth saying before handing the deck back, especially
+    when it arrived that way.
+    """
+    stale = []
+    for n, part in enumerate(_slide_ids(z).values(), start=1):
+        try:
+            root = ET.fromstring(z.read(part))
+        except ET.ParseError:
+            continue  # already reported, and a worse problem than numbering
+
+        for sp in root.iter(f"{P}sp"):
+            off = sp.find("p:spPr/a:xfrm/a:off", NS)
+            # Only the bottom-right corner: any other number on the slide is
+            # content, not pagination.
+            if off is None or int(off.get("y")) < 6000000 or int(off.get("x")) < 9000000:
+                continue
+            text = "".join(t.text or "" for t in sp.iter(f"{{{NS['a']}}}t")).strip()
+            if text.isdigit() and int(text) != n:
+                stale.append(f"slide {n} prints {text}")
+    return stale
 
 
 def _join(base: str, target: str) -> str:

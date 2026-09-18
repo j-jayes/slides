@@ -86,6 +86,38 @@ class ValidateTest(unittest.TestCase):
             'Target="../slideLayouts/slideLayout1.xml"/></Relationships>').encode("utf8")})
         self.assertIn("slide1.xml", " ".join(pptx_diff.validate(deck)))
 
+    def test_page_numbers_typed_as_text_are_reported(self):
+        # A deck whose slide numbers are literal text rather than a slidenum
+        # field goes stale the moment anyone inserts a slide -- including us.
+        # The client deck arrived already wrong this way, so it is worth
+        # saying out loud before handing anything back.
+        src = make_deck(self.tmp / "src.pptx")
+        part = pptx_edit.slide_parts(src)[2]
+        numbered = pptx_edit.read(src, part).replace(
+            "<p:spTree>",
+            '<p:spTree><p:sp><p:nvSpPr><p:cNvPr id="90" name="Slide number"/>'
+            '<p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+            '<p:spPr><a:xfrm><a:off x="11521440" y="6492240"/>'
+            '<a:ext cx="457200" cy="274320"/></a:xfrm></p:spPr>'
+            "<p:txBody><a:bodyPr/><a:p><a:r><a:t>7</a:t></a:r></a:p></p:txBody></p:sp>")
+        deck = self.broken(replace={part: numbered.encode("utf8")})
+        note = " ".join(pptx_diff.validate(deck))
+        self.assertIn("note:", note)
+        self.assertIn("slide 3", note)
+
+    def test_a_page_number_that_agrees_with_its_position_is_not_reported(self):
+        src = make_deck(self.tmp / "src.pptx")
+        part = pptx_edit.slide_parts(src)[2]
+        numbered = pptx_edit.read(src, part).replace(
+            "<p:spTree>",
+            '<p:spTree><p:sp><p:nvSpPr><p:cNvPr id="90" name="Slide number"/>'
+            '<p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+            '<p:spPr><a:xfrm><a:off x="11521440" y="6492240"/>'
+            '<a:ext cx="457200" cy="274320"/></a:xfrm></p:spPr>'
+            "<p:txBody><a:bodyPr/><a:p><a:r><a:t>3</a:t></a:r></a:p></p:txBody></p:sp>")
+        deck = self.broken(replace={part: numbered.encode("utf8")})
+        self.assertEqual([], pptx_diff.validate(deck))
+
     def test_slide_xml_that_does_not_parse_is_caught(self):
         deck = self.broken(replace={"ppt/slides/slide1.xml": b"<p:sld><unclosed>"})
         self.assertIn("slide1.xml", " ".join(pptx_diff.validate(deck)))
