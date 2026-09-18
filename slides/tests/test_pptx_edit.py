@@ -420,6 +420,26 @@ class DeleteAndMoveTest(unittest.TestCase):
         self.assertNotIn("ppt/media/image1.gif", gone["also_removed"])
         self.assertEqual([], pptx_diff.validate(deck))
 
+    def test_a_slide_linked_to_from_the_deleted_one_survives(self):
+        # A jump link makes one slide reference another. Treating that like a
+        # picture would delete the slide it points at -- which, if nothing
+        # else links to it, is most of the deck's slides one at a time.
+        # reports/template.pptx carries exactly such a link.
+        deck = self.deck()
+        target = pptx_edit.slide_parts(deck)[2]
+        linker = pptx_edit.slide_parts(deck)[0]
+        rels = f"ppt/slides/_rels/{Path(linker).name}.rels"
+        pptx_edit.edit(deck, replace={rels: pptx_edit.read(deck, rels).replace(
+            "</Relationships>",
+            '<Relationship Id="rId8" Type="http://schemas.openxmlformats.org/'
+            'officeDocument/2006/relationships/slide" '
+            f'Target="../slides/{Path(target).name}"/></Relationships>').encode("utf8")})
+        gone = pptx_edit.delete_slide(deck, 1)
+        self.assertNotIn(target, gone["also_removed"])
+        with zipfile.ZipFile(deck) as z:
+            self.assertIn(target, z.namelist())
+        self.assertEqual([], pptx_diff.validate(deck))
+
     def test_the_deck_is_still_sound_after_a_delete(self):
         for d in DIALECTS:
             with self.subTest(d):
