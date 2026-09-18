@@ -156,6 +156,9 @@ python tools/pptx_inventory.py deck.pptx inventory.json    # shape ids, geometry
 python tools/pptx_edit.py xml  deck.pptx 8                 # read one slide's XML
 python tools/pptx_edit.py add  deck.pptx --clone 8 --after 8      # a starting point
 python tools/pptx_edit.py add  deck.pptx new-slide.xml --after 8  # an authored slide
+python tools/pptx_edit.py text deck.pptx --slide 13 --shape 4 --para 0 "Ny rubrik"
+python tools/pptx_edit.py delete deck.pptx 17              # with its notes and orphaned media
+python tools/pptx_edit.py move deck.pptx 9 --to 6          # rewrites only the running order
 python tools/pptx_diff.py check deck.pptx                  # what PowerPoint would refuse
 python tools/pptx_diff.py diff original.pptx deck.pptx     # what we actually touched
 python tools/deck_inbox.py handback ../work/deras-forslag  # -> outbox/, with a change note

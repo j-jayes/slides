@@ -92,6 +92,25 @@ python tools/pptx_edit.py add ../work/x/deck.pptx --clone 8 --after 8   # a star
 python tools/pptx_edit.py xml ../work/x/deck.pptx 9                     # read what you got
 ```
 
+The other three verbs address by the ids in `inventory.json`:
+
+```bash
+python tools/pptx_edit.py text   deck.pptx --slide 13 --shape 4 --para 0 "Ny rubrik"
+python tools/pptx_edit.py delete deck.pptx 17
+python tools/pptx_edit.py move   deck.pptx 9 --to 6
+```
+
+`text` rewrites the paragraph as one run wearing the first run's properties,
+which is what keeps their type size, weight and typeface. It refuses a
+paragraph whose runs are genuinely formatted differently — a bold lead-in then
+normal text — unless you pass `--flatten` and accept losing that. It ignores
+the `err=` and `dirty=` attributes spell-checking scatters about, which is why
+a paragraph PowerPoint has split into seventy runs still counts as uniform.
+
+`delete` takes the notes page with the slide, and any media no other slide
+still references. `move` rewrites only the running order, so no slide part
+changes at all.
+
 Take the grid and the palette from `inventory.json` rather than inventing them —
 every shape carries its EMU geometry, preset shape, fill and per-paragraph run
 formats. Reuse the deck's own left margin, its card width, its type sizes.
