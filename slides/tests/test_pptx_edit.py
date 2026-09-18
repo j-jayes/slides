@@ -17,7 +17,9 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+import pptx_diff  # noqa: E402
 import pptx_edit  # noqa: E402
+import pptx_inventory  # noqa: E402
 from deckfixture import make_deck  # noqa: E402
 
 DIALECTS = ("powerpoint", "pandoc")
@@ -257,6 +259,87 @@ class AddSlideTest(unittest.TestCase):
         for kwargs in ({"clone": 9, "after": 1}, {"clone": 1, "after": 9}):
             with self.subTest(kwargs), self.assertRaises(SystemExit):
                 pptx_edit.add_slide(deck, **kwargs)
+
+
+class SetTextTest(unittest.TestCase):
+    """Rewriting a paragraph in place, keeping the formatting around it."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+
+    def deck(self, dialect="powerpoint"):
+        return make_deck(self.tmp / f"{dialect}.pptx", dialect=dialect)
+
+    def words(self, deck, slide):
+        """What pptx_to_md reads back off one slide."""
+        import pptx_to_md
+        out = self.tmp / "read.md"
+        pptx_to_md.convert(deck, out, self.tmp / "a")
+        body = out.read_text(encoding="utf8").split("## Slide ")[slide]
+        return body
+
+    def test_a_paragraph_is_replaced_and_the_rest_left_alone(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                pptx_edit.set_text(deck, slide=1, shape=3, para=0, text="Nytt innehåll")
+                self.assertIn("Nytt innehåll", self.words(deck, 1))
+                self.assertNotIn("Stamped on", self.words(deck, 1))
+                self.assertIn("Opening", self.words(deck, 1))
+
+    def test_the_run_formatting_survives_the_edit(self):
+        # The whole point. Assigning to a text frame wholesale is what loses
+        # the size, weight and typeface; the run properties are kept here.
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                before = pptx_inventory.inventory(deck)["slides"][0]["shapes"][0]
+                pptx_edit.set_text(deck, slide=1, shape=2, para=0, text="Ny rubrik")
+                after = pptx_inventory.inventory(deck)["slides"][0]["shapes"][0]
+                self.assertEqual("Ny rubrik", after["paragraphs"][0]["text"])
+                self.assertEqual(before["paragraphs"][0]["formats"],
+                                 after["paragraphs"][0]["formats"])
+
+    def test_only_that_one_slide_changes(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                before = parts(deck)
+                pptx_edit.set_text(deck, slide=1, shape=2, para=0, text="Ny rubrik")
+                after = parts(deck)
+                self.assertEqual({pptx_edit.slide_parts(deck)[0]},
+                                 {n for n in before if before[n] != after[n]})
+
+    def test_a_mixed_paragraph_is_refused_unless_flattening_is_asked_for(self):
+        # A bold lead-in followed by normal text cannot survive being rewritten
+        # as one run, so the caller has to say they accept that.
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                with self.assertRaises(SystemExit) as caught:
+                    pptx_edit.set_text(deck, slide=2, shape=4, para=0, text="Ett stycke")
+                self.assertIn("--flatten", str(caught.exception))
+                pptx_edit.set_text(deck, slide=2, shape=4, para=0, text="Ett stycke",
+                                   flatten=True)
+                self.assertIn("Ett stycke", self.words(deck, 2))
+
+    def test_the_characters_xml_cares_about_are_escaped(self):
+        deck = self.deck()
+        pptx_edit.set_text(deck, slide=1, shape=2, para=0, text='Risk & "reward" <nu>')
+        self.assertEqual([], pptx_diff.validate(deck))
+        self.assertIn('Risk & "reward" <nu>', self.words(deck, 1))
+
+    def test_a_leading_space_is_preserved_rather_than_eaten(self):
+        deck = self.deck()
+        pptx_edit.set_text(deck, slide=1, shape=2, para=0, text="  indraget")
+        self.assertIn('xml:space="preserve"', pptx_edit.read(deck, pptx_edit.slide_parts(deck)[0]))
+
+    def test_an_unknown_shape_or_paragraph_is_refused(self):
+        deck = self.deck()
+        for kwargs in ({"shape": 999, "para": 0}, {"shape": 2, "para": 9}):
+            with self.subTest(kwargs), self.assertRaises(SystemExit):
+                pptx_edit.set_text(deck, slide=1, text="x", **kwargs)
 
 
 if __name__ == "__main__":
