@@ -6,6 +6,7 @@ the colleague, so rewrite() is tested harder than anything it is used for.
 
     python -m unittest tests.test_pptx_edit
 """
+import re
 import shutil
 import sys
 import tempfile
@@ -107,6 +108,155 @@ class InPlaceTest(unittest.TestCase):
         self.assertIn("PowerPoint", str(caught.exception))
         self.assertEqual(before, self.deck.read_bytes())
         self.assertEqual([], list(self.tmp.glob("*.tmp")))
+
+
+class AddSlideTest(unittest.TestCase):
+    """A slide has to be registered in four places or PowerPoint repairs the file."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+
+    def deck(self, dialect="powerpoint", **kwargs):
+        return make_deck(self.tmp / f"{dialect}.pptx", dialect=dialect, **kwargs)
+
+    def test_a_cloned_slide_lands_where_it_was_asked_for(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                made = pptx_edit.add_slide(deck, clone=1, after=1)
+                self.assertEqual(2, made["position"])
+                order = pptx_edit.slide_parts(deck)
+                self.assertEqual(4, len(order))
+                self.assertEqual(made["part"], order[1])
+
+    def test_it_goes_first_when_asked_for_after_zero(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                made = pptx_edit.add_slide(deck, clone=2, after=0)
+                self.assertEqual(made["part"], pptx_edit.slide_parts(deck)[0])
+
+    def test_the_new_part_never_reuses_an_existing_file_name(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                # The fixture already holds slide1..slide3, presentation order
+                # running the other way. Renumbering any of them would break
+                # every relationship pointing at them.
+                self.assertEqual("ppt/slides/slide4.xml",
+                                 pptx_edit.add_slide(deck, clone=1, after=3)["part"])
+
+    def test_the_slide_id_clears_every_id_already_in_use(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                # The fixture's ids are 256, 271, 258: a count-based guess
+                # would collide, and a duplicate id is a repair prompt.
+                self.assertEqual(272, pptx_edit.add_slide(deck, clone=1, after=3)["sldId"])
+
+    def test_the_relationship_id_clears_the_presentation_as_well_as_its_rels(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                rid = pptx_edit.add_slide(deck, clone=1, after=3)["rId"]
+                self.assertEqual("rId10", rid)
+                pres = pptx_edit.read(deck, "ppt/presentation.xml")
+                self.assertEqual(1, pres.count(f'r:id="{rid}"'))
+
+    def test_the_four_registrations_are_all_made(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                made = pptx_edit.add_slide(deck, clone=1, after=1)
+                name = Path(made["part"]).name
+                with zipfile.ZipFile(deck) as z:
+                    self.assertIn(made["part"], z.namelist())
+                    self.assertIn(f"ppt/slides/_rels/{name}.rels", z.namelist())
+                self.assertIn(f'PartName="/{made["part"]}"',
+                              pptx_edit.read(deck, "[Content_Types].xml"))
+                self.assertIn(f'Target="slides/{name}"',
+                              pptx_edit.read(deck, "ppt/_rels/presentation.xml.rels"))
+
+    def test_a_clone_gets_its_own_notes_page_or_none_at_all(self):
+        # Two slides sharing one notesSlide is a defect PowerPoint repairs,
+        # and it would mean editing one slide's notes changed the other's.
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                made = pptx_edit.add_slide(deck, clone=1, after=1)
+                rels = pptx_edit.read(deck, f"ppt/slides/_rels/{Path(made['part']).name}.rels")
+                self.assertNotIn("notesSlide", rels)
+                self.assertIn("slideLayout", rels)
+
+    def test_the_presentation_children_keep_their_order(self):
+        # A PptxGenJS deck puts notesMasterIdLst where the schema does not
+        # expect it. PowerPoint reads that happily and tidying it kills the
+        # deck, so an edit must not so much as reorder siblings.
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                before = re.findall(r"<(/?p:[a-zA-Z]+)",
+                                    pptx_edit.read(deck, "ppt/presentation.xml"))
+                pptx_edit.add_slide(deck, clone=1, after=1)
+                after = re.findall(r"<(/?p:[a-zA-Z]+)",
+                                   pptx_edit.read(deck, "ppt/presentation.xml"))
+                self.assertEqual(before.count("p:sldId") + 1, after.count("p:sldId"))
+                self.assertEqual([t for t in before if t != "p:sldId"],
+                                 [t for t in after if t != "p:sldId"])
+
+    def test_every_other_part_comes_through_byte_for_byte(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d, media=True)
+                before = parts(deck)
+                made = pptx_edit.add_slide(deck, clone=1, after=1)
+                after = parts(deck)
+                self.assertEqual({"ppt/presentation.xml", "ppt/_rels/presentation.xml.rels",
+                                  "[Content_Types].xml"},
+                                 {n for n in before if before[n] != after[n]})
+                self.assertEqual({made["part"],
+                                  f"ppt/slides/_rels/{Path(made['part']).name}.rels"},
+                                 set(after) - set(before))
+
+    def test_an_authored_slide_can_be_inserted_from_xml(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                xml = pptx_edit.read(deck, pptx_edit.slide_parts(deck)[0])
+                xml = xml.replace("Opening", "Authored here").encode("utf8")
+                made = pptx_edit.add_slide(deck, xml=xml, after=3)
+                self.assertIn("Authored here", pptx_edit.read(deck, made["part"]))
+
+    def test_malformed_xml_is_refused_and_the_deck_is_left_alone(self):
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                before = deck.read_bytes()
+                with self.assertRaises(SystemExit) as caught:
+                    pptx_edit.add_slide(deck, xml=b"<p:sld><unclosed>", after=1)
+                self.assertIn("XML", str(caught.exception))
+                self.assertEqual(before, deck.read_bytes())
+
+    def test_a_reference_the_rels_cannot_satisfy_is_refused(self):
+        # A dangling r:embed is the single commonest cause of the repair
+        # dialog, and it is cheap to catch before writing anything.
+        for d in DIALECTS:
+            with self.subTest(d):
+                deck = self.deck(d)
+                xml = pptx_edit.read(deck, pptx_edit.slide_parts(deck)[0])
+                xml = xml.replace("<p:spTree>", '<p:spTree><p:pic><a:blip r:embed="rId99"/></p:pic>')
+                before = deck.read_bytes()
+                with self.assertRaises(SystemExit) as caught:
+                    pptx_edit.add_slide(deck, xml=xml.encode("utf8"), after=1)
+                self.assertIn("rId99", str(caught.exception))
+                self.assertEqual(before, deck.read_bytes())
+
+    def test_an_out_of_range_request_is_refused(self):
+        deck = self.deck()
+        for kwargs in ({"clone": 9, "after": 1}, {"clone": 1, "after": 9}):
+            with self.subTest(kwargs), self.assertRaises(SystemExit):
+                pptx_edit.add_slide(deck, **kwargs)
 
 
 if __name__ == "__main__":
