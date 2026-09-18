@@ -21,6 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import deck_inbox  # noqa: E402
+import pptx_edit  # noqa: E402
 from deckfixture import make_deck  # noqa: E402
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -73,6 +74,52 @@ class IntakeTest(unittest.TestCase):
         with self.assertRaises(SystemExit) as caught:
             deck_inbox.intake(self.src, self.root, render=False)
         self.assertIn("already", str(caught.exception))
+
+
+class HandbackTest(unittest.TestCase):
+    """What goes back to the colleague, and the evidence that goes with it."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.root = self.tmp / "repo"
+        (self.root / "inbox").mkdir(parents=True)
+        self.src = make_deck(self.root / "inbox" / "Deras förslag v2.pptx")
+        self.work = deck_inbox.intake(self.src, self.root, render=False)
+
+    def test_the_deck_goes_out_under_the_name_it_came_in_under(self):
+        out = deck_inbox.handback(self.work, render=False)
+        # The colleague recognises their own file name; the suffix says who
+        # touched it without making them hunt for the original.
+        self.assertEqual("Deras förslag v2 (Nexer).pptx", out.name)
+        self.assertEqual(self.root / "outbox", out.parent)
+
+    def test_an_unedited_deck_goes_back_byte_for_byte(self):
+        out = deck_inbox.handback(self.work, render=False)
+        self.assertEqual(self.src.read_bytes(), out.read_bytes())
+
+    def test_the_change_note_says_what_survived(self):
+        pptx_edit.add_slide(self.work / "deck.pptx", clone=1, after=3)
+        deck_inbox.handback(self.work, render=False)
+        note = (self.root / "outbox" / "Deras förslag v2 (Nexer).changes.md").read_text(
+            encoding="utf8")
+        self.assertIn("3 of 3 slides", note)
+        self.assertIn("Added: 1 slide(s)", note)
+
+    def test_a_deck_that_would_not_open_never_leaves(self):
+        # The last place to catch a broken package is here, not in the
+        # colleague's PowerPoint.
+        deck = self.work / "deck.pptx"
+        pptx_edit.edit(deck, replace={pptx_edit.slide_parts(deck)[0]: b"<p:sld><oops>"})
+        with self.assertRaises(SystemExit) as caught:
+            deck_inbox.handback(self.work, render=False)
+        self.assertIn("well-formed", str(caught.exception))
+        self.assertFalse((self.root / "outbox").exists())
+
+    def test_losing_a_part_stops_the_handback(self):
+        pptx_edit.edit(self.work / "deck.pptx", drop={"ppt/theme/theme1.xml"})
+        with self.assertRaises(SystemExit):
+            deck_inbox.handback(self.work, render=False)
 
 
 @unittest.skipUnless(powerpoint_installed(), "needs PowerPoint for COM export")
