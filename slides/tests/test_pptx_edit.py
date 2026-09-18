@@ -6,6 +6,7 @@ the colleague, so rewrite() is tested harder than anything it is used for.
 
     python -m unittest tests.test_pptx_edit
 """
+import os
 import re
 import shutil
 import sys
@@ -98,6 +99,26 @@ class InPlaceTest(unittest.TestCase):
 
     def test_an_edit_lands_on_the_deck_itself(self):
         pptx_edit.edit(self.deck, replace={"ppt/presentation.xml": b"<new/>"})
+        self.assertEqual(b"<new/>", parts(self.deck)["ppt/presentation.xml"])
+
+    def test_a_momentary_lock_is_waited_out_rather_than_reported(self):
+        # Windows denies the rename while anything holds a handle on either
+        # file, and on a freshly written temp file that is routinely a virus
+        # scanner rather than PowerPoint. Running the suite in a loop turned
+        # this up about one run in five, as a failure blaming PowerPoint for
+        # a file nobody had open.
+        real = os.replace
+        calls = []
+
+        def flaky(src, dst):
+            calls.append(1)
+            if len(calls) < 3:
+                raise PermissionError(5, "Access is denied")
+            return real(src, dst)
+
+        with mock.patch("os.replace", flaky):
+            pptx_edit.edit(self.deck, replace={"ppt/presentation.xml": b"<new/>"})
+        self.assertEqual(3, len(calls))
         self.assertEqual(b"<new/>", parts(self.deck)["ppt/presentation.xml"])
 
     def test_a_failed_write_leaves_the_deck_as_it_was_and_says_why(self):

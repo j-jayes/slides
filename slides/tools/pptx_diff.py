@@ -204,8 +204,8 @@ def diff(before: Path, after: Path) -> dict:
     # Deleting a slide is done on purpose and legitimately takes the slide, its
     # rels, its notes page and any media only it used. Anything else that
     # disappears was an accident, and so is anything at all when no slide went.
-    expected = REMOVABLE if slides_removed else re.compile(r"(?!)")
-    unexplained = [n for n in parts["removed"] if not expected.match(n)]
+    unexplained = [n for n in parts["removed"]
+                   if not (slides_removed and REMOVABLE.match(n))]
     disturbed = [n for n in parts["changed"] + parts["removed"] if SACRED.match(n)]
     return {
         "slides": {

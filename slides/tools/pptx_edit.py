@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import time
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -95,14 +96,30 @@ def edit(deck: Path, **changes) -> None:
     tmp = deck.with_suffix(".pptx.tmp")
     try:
         rewrite(deck, tmp, **changes)
-        try:
-            os.replace(tmp, deck)
-        except PermissionError as exc:
-            raise SystemExit(
-                f"cannot write {deck.name}: {exc.strerror}. "
-                f"Close it in PowerPoint and run this again.") from exc
+        _replace_when_free(tmp, deck)
     finally:
         tmp.unlink(missing_ok=True)
+
+
+def _replace_when_free(tmp: Path, deck: Path, tries: int = 5) -> None:
+    """Rename over `deck`, waiting out a momentary lock.
+
+    Windows refuses the rename while anything holds a handle on either file,
+    and on a file written a millisecond ago that is usually a virus scanner
+    rather than PowerPoint. Retrying briefly turns a spurious failure -- which
+    blamed PowerPoint for a deck nobody had open -- back into a successful
+    edit, and leaves the honest message for a deck that really is open.
+    """
+    for attempt in range(tries):
+        try:
+            os.replace(tmp, deck)
+            return
+        except PermissionError as exc:
+            if attempt == tries - 1:
+                raise SystemExit(
+                    f"cannot write {deck.name}: {exc.strerror}. "
+                    f"Close it in PowerPoint and run this again.") from exc
+            time.sleep(0.1 * (attempt + 1))
 
 
 def read(deck: Path, part: str) -> str:
@@ -226,9 +243,7 @@ def set_text(deck: Path, *, slide: int, shape: int, para: int,
     part = order[slide - 1]
     xml = read(deck, part)
 
-    found = next((m for m in SHAPE.finditer(xml)
-                  if re.search(r'<p:cNvPr id="(\d+)"', m.group(0))
-                  and int(re.search(r'<p:cNvPr id="(\d+)"', m.group(0)).group(1)) == shape), None)
+    found = next((m for m in SHAPE.finditer(xml) if _shape_id(m.group(0)) == shape), None)
     if found is None:
         raise SystemExit(f"slide {slide} has no shape with id {shape}; "
                          f"inventory.json lists the ids")
@@ -244,13 +259,19 @@ def set_text(deck: Path, *, slide: int, shape: int, para: int,
     runs = RUN.findall(old)
     if len(runs) > 1 and not flatten and not _uniform(runs):
         raise SystemExit(
-            f"the runs in that paragraph are formatted differently, so rewriting it "
-            f"as one run would lose the distinction. Pass --flatten to accept that.")
+            "the runs in that paragraph are formatted differently, so rewriting it "
+            "as one run would lose the distinction. Pass --flatten to accept that.")
 
     new = _one_run(old, runs, text)
     body = found.group(0)[:paras[para].start()] + new + found.group(0)[paras[para].end():]
     edit(deck, replace={part: (xml[:found.start()] + body + xml[found.end():]).encode("utf8")})
     return {"part": part, "shape": shape, "para": para, "text": text}
+
+
+def _shape_id(shape_xml: str) -> int | None:
+    """A shape's cNvPr id -- the first one in it, which is its own."""
+    match = re.search(r'<p:cNvPr\b[^>]*?\sid="(\d+)"', shape_xml)
+    return int(match.group(1)) if match else None
 
 
 def _uniform(runs: list[str]) -> bool:
