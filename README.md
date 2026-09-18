@@ -111,7 +111,7 @@ as `/slides:nexer-slides` or triggered automatically by what you ask for.
 | `slides/R/nexer-ggplot.R` | `theme_nexer()`, the chart palette, `nexer_span()` for coloured-subtitle legends, and the `label_short()` / `label_pct()` axis formatters. |
 | `slides/R/nexer-diagrams.R` | `row_of()`, `nexer_boxes()` and friends — box-and-arrow diagrams that export to PowerPoint. |
 | `slides/tools/` | Build, publish and verification scripts (below). |
-| `slides/tests/` | The layout and component regressions. |
+| `slides/tests/` | The layout and component regressions, plus `deckfixture.py` — a deck written in memory in both PowerPoint's and pandoc's XML dialects. |
 | `skills/` | The Claude Code skills, shipped as the `slides` plugin. |
 | `.claude-plugin/` | Plugin and marketplace manifests. This repo is its own single-plugin marketplace. |
 
@@ -147,6 +147,27 @@ python tools/export_pdf.py _site/my-deck.html      # print the deck to PDF via h
 python tools/pptx_to_md.py draft.pptx draft.md     # read a pptx (e.g. a client draft) back as Markdown
 ```
 
+A deck that arrives from someone else goes through its own round trip. Drop it
+in `inbox/` (gitignored, as are `work/` and `outbox/`):
+
+```bash
+python tools/deck_inbox.py intake "../inbox/Deras förslag.pptx"   # -> work/<slug>/
+python tools/pptx_inventory.py deck.pptx inventory.json    # shape ids, geometry, colours, layouts
+python tools/pptx_edit.py xml  deck.pptx 8                 # read one slide's XML
+python tools/pptx_edit.py add  deck.pptx --clone 8 --after 8      # a starting point
+python tools/pptx_edit.py add  deck.pptx new-slide.xml --after 8  # an authored slide
+python tools/pptx_diff.py check deck.pptx                  # what PowerPoint would refuse
+python tools/pptx_diff.py diff original.pptx deck.pptx     # what we actually touched
+python tools/deck_inbox.py handback ../work/deras-forslag  # -> outbox/, with a change note
+```
+
+Every edit is a zip rewritten to a zip, copying the bytes of every part it was
+not asked to touch, so a slide nobody edited goes back **byte-for-byte** as it
+arrived — which `pptx_diff.py` proves rather than assumes. That is why none of
+this uses python-pptx: it re-serialises every part it parses, and on a deck
+carrying a sensitivity label or SharePoint metadata it can drop parts outright.
+See the `colleague-deck` skill.
+
 `shoot_pptx.ps1` doubles as the corruption test: a malformed package makes
 PowerPoint raise a repair prompt and the COM open fails. It attaches to a
 running PowerPoint rather than starting and quitting one, so it will not close
@@ -161,7 +182,7 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Twenty-five skills ship in the plugin. Five are about decks:
+Twenty-six skills ship in the plugin. Six are about decks:
 
 | Skill | What it covers |
 |---|---|
@@ -170,6 +191,7 @@ Twenty-five skills ship in the plugin. Five are about decks:
 | `mckinsey-slides` | Rigour — action-title grammar, the ghost deck, sourcing and chart conventions. |
 | `ggplot-diagrams` | Diagrams — box-and-arrow exhibits drawn in ggplot, so they survive the PowerPoint export. |
 | `illustrate-slides` | Illustration — AI images from a committed YAML file, one style across the deck, one recurring character. |
+| `colleague-deck` | Someone else's .pptx — read it, see it, add slides in its own idiom, hand it back with the rest byte-for-byte unchanged. |
 
 Thirteen are about charts — Claus Wilke's rules plus the habits from
 [interlude-one](https://github.com/j-jayes/interlude-one), codified as runnable
