@@ -49,7 +49,10 @@ class ValidateTest(unittest.TestCase):
         self.assertIn("image1.gif", " ".join(pptx_diff.validate(deck)))
 
     def test_a_part_with_no_content_type_is_caught(self):
-        ct = pptx_edit.read(make_deck(self.tmp / "s.pptx"), "[Content_Types].xml")
+        # media=True to match the deck being broken: a Content_Types taken
+        # from a deck without media would also drop the gif Default, and the
+        # test would pass on the wrong defect.
+        ct = pptx_edit.read(make_deck(self.tmp / "s.pptx", media=True), "[Content_Types].xml")
         deck = self.broken(replace={"[Content_Types].xml": ct.replace(
             '<Override PartName="/ppt/slides/slide1.xml"'
             ' ContentType="application/vnd.openxmlformats-officedocument'
