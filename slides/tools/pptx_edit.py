@@ -287,6 +287,102 @@ def _one_run(old: str, runs: list[str], text: str) -> str:
     return re.sub(r"<a:br\s*/>", "", out)
 
 
+def delete_slide(deck: Path, slide: int) -> dict:
+    """Take slide number `slide` out, with everything only it was using."""
+    order = slide_parts(deck)
+    if not 1 <= slide <= len(order):
+        raise SystemExit(f"slide {slide} is outside 1..{len(order)}")
+    if len(order) == 1:
+        raise SystemExit("a presentation needs one slide; this is the last one")
+    part = order[slide - 1]
+    name = Path(part).name
+    rels_part = f"ppt/slides/_rels/{name}.rels"
+
+    with zipfile.ZipFile(deck) as z:
+        mine = set(rels_of(z, part).values())
+        drop = {part, rels_part} | _orphans(z, mine, keep_out=part)
+
+    pres = read(deck, "ppt/presentation.xml")
+    rid = re.search(rf'<Relationship[^>]*Target="slides/{re.escape(name)}"[^>]*/>',
+                    read(deck, "ppt/_rels/presentation.xml.rels"))
+    if rid is None:
+        raise SystemExit(f"{name} has no relationship from the presentation")
+    entry = _sld_id_entry(pres, re.search(r'Id="([^"]+)"', rid.group(0)).group(1))
+
+    edit(deck, drop=drop, replace={
+        "ppt/presentation.xml": pres.replace(entry, "", 1).encode("utf8"),
+        "ppt/_rels/presentation.xml.rels": read(
+            deck, "ppt/_rels/presentation.xml.rels").replace(rid.group(0), "", 1).encode("utf8"),
+        "[Content_Types].xml": _drop_overrides(
+            read(deck, "[Content_Types].xml"), drop).encode("utf8"),
+    })
+    return {"part": part, "also_removed": sorted(drop - {part, rels_part})}
+
+
+def _orphans(z: zipfile.ZipFile, mine: set[str], keep_out: str) -> set[str]:
+    """Parts this slide uses that nothing else will still be using.
+
+    A notes page belongs to one slide and always goes. Media, charts and the
+    rest are shared as often as not, so they go only when no other part still
+    points at them -- dropping one that is still referenced is the commonest
+    cause of the repair dialog there is.
+    """
+    others = set()
+    for rels in (n for n in z.namelist() if n.endswith(".rels")):
+        owner = rels.replace("/_rels/", "/").removesuffix(".rels")
+        if owner == keep_out:
+            continue
+        others |= set(rels_of(z, owner).values())
+
+    gone = set()
+    for target in mine:
+        if "slideLayouts/" in target or target in others:
+            continue
+        gone.add(target)
+        nested = f"{Path(target).parent.as_posix()}/_rels/{Path(target).name}.rels"
+        if nested in z.namelist():
+            gone.add(nested)
+    return gone
+
+
+def _drop_overrides(ct: str, parts: set[str]) -> str:
+    for part in parts:
+        ct = re.sub(rf'<Override[^>]*PartName="/{re.escape(part)}"[^>]*/>', "", ct)
+    return ct
+
+
+def _sld_id_entry(pres: str, rid: str) -> str:
+    for entry in SLD_ID.findall(pres):
+        if f'r:id="{rid}"' in entry:
+            return entry
+    raise SystemExit(f"no <p:sldId> uses {rid}")
+
+
+def move_slide(deck: Path, slide: int, to: int) -> dict:
+    """Put slide number `slide` at position `to`, changing nothing else.
+
+    The running order lives entirely in <p:sldIdLst>, so this rewrites one
+    part and no slide at all.
+    """
+    pres = read(deck, "ppt/presentation.xml")
+    entries = SLD_ID.findall(pres)
+    if not 1 <= slide <= len(entries):
+        raise SystemExit(f"slide {slide} is outside 1..{len(entries)}")
+    if not 1 <= to <= len(entries):
+        raise SystemExit(f"--to {to} is outside 1..{len(entries)}")
+    if slide == to:
+        return {"moved": False, "from": slide, "to": to}
+
+    reordered = list(entries)
+    reordered.insert(to - 1, reordered.pop(slide - 1))
+    out, rest = [], pres
+    for old, new in zip(entries, reordered):
+        head, _, rest = rest.partition(old)
+        out.append(head + new)
+    edit(deck, replace={"ppt/presentation.xml": ("".join(out) + rest).encode("utf8")})
+    return {"moved": True, "from": slide, "to": to}
+
+
 def _layout_of(z: zipfile.ZipFile, slide: str | None) -> str:
     """The layout a neighbouring slide uses, so a new slide inherits it."""
     if slide is not None:
@@ -383,7 +479,26 @@ def main() -> int:
     edit_text.add_argument("--flatten", action="store_true",
                            help="accept losing the run-by-run formatting")
 
+    gone = sub.add_parser("delete", help="remove a slide and anything only it used")
+    gone.add_argument("deck", type=Path)
+    gone.add_argument("slide", type=int)
+
+    moved = sub.add_parser("move", help="put a slide at another position")
+    moved.add_argument("deck", type=Path)
+    moved.add_argument("slide", type=int)
+    moved.add_argument("--to", type=int, required=True)
+
     args = ap.parse_args()
+    if args.cmd == "delete":
+        done = delete_slide(args.deck, args.slide)
+        extra = f", with {', '.join(done['also_removed'])}" if done["also_removed"] else ""
+        print(f"removed {done['part']}{extra}")
+        return 0
+    if args.cmd == "move":
+        done = move_slide(args.deck, args.slide, to=args.to)
+        print(f"slide {done['from']} is now slide {done['to']}" if done["moved"]
+              else f"slide {args.slide} is already at {args.to}")
+        return 0
     if args.cmd == "xml":
         order = slide_parts(args.deck)
         if not 1 <= args.slide <= len(order):

@@ -164,10 +164,27 @@ class DiffTest(unittest.TestCase):
         self.assertEqual([271], report["slides"]["changed"])
         self.assertEqual([256, 258], report["slides"]["identical"])
 
-    def test_a_lost_part_is_never_acceptable(self):
+    def test_a_part_lost_with_no_slide_deleted_is_not_acceptable(self):
         pptx_edit.edit(self.after, drop={"ppt/media/image1.gif"})
         report = pptx_diff.diff(self.before, self.after)
         self.assertEqual(["ppt/media/image1.gif"], report["parts"]["removed"])
+        self.assertFalse(report["ok"])
+
+    def test_the_parts_a_deleted_slide_took_with_it_are_acceptable(self):
+        # Deleting a slide is a thing we do on purpose, and it legitimately
+        # removes the slide, its rels, its notes page and any media only it
+        # was using. Reporting that as damage would make the check useless
+        # the first time anyone deletes anything.
+        gone = pptx_edit.delete_slide(self.after, 2)
+        report = pptx_diff.diff(self.before, self.after)
+        self.assertEqual([271], report["slides"]["removed"])
+        self.assertIn("ppt/media/image1.gif", report["parts"]["removed"])
+        self.assertTrue(report["ok"])
+
+    def test_a_theme_lost_is_never_acceptable_even_alongside_a_delete(self):
+        pptx_edit.delete_slide(self.after, 2)
+        pptx_edit.edit(self.after, drop={"ppt/theme/theme1.xml"})
+        report = pptx_diff.diff(self.before, self.after)
         self.assertFalse(report["ok"])
 
     def test_a_disturbed_theme_is_not_acceptable(self):

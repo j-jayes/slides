@@ -38,6 +38,10 @@ R = f"{{{NS['r']}}}"
 # whole approach exists to rule out.
 SACRED = re.compile(r"ppt/(slideMasters|slideLayouts|theme|notesMasters)/")
 
+# Parts a deleted slide may legitimately take with it. A master, layout or
+# theme is never among them, whatever was deleted.
+REMOVABLE = re.compile(r"ppt/(slides|notesSlides|media|charts|embeddings|drawings)/")
+
 # Parts that need their own Override and are not covered by the <Default> for
 # "xml". Every deck declares that Default, so extension alone proves nothing:
 # a slide missing its Override is a repair prompt even though the Default is
@@ -196,17 +200,24 @@ def diff(before: Path, after: Path) -> dict:
         "added": sorted(a_parts.keys() - b_parts.keys()),
         "removed": sorted(b_parts.keys() - a_parts.keys()),
     }
+    slides_removed = [i for i in b_slides if i not in a_slides]
+    # Deleting a slide is done on purpose and legitimately takes the slide, its
+    # rels, its notes page and any media only it used. Anything else that
+    # disappears was an accident, and so is anything at all when no slide went.
+    expected = REMOVABLE if slides_removed else re.compile(r"(?!)")
+    unexplained = [n for n in parts["removed"] if not expected.match(n)]
     disturbed = [n for n in parts["changed"] + parts["removed"] if SACRED.match(n)]
     return {
         "slides": {
             "identical": identical,
             "changed": changed,
             "added": [i for i in a_slides if i not in b_slides],
-            "removed": [i for i in b_slides if i not in a_slides],
+            "removed": slides_removed,
         },
         "parts": parts,
         "disturbed": disturbed,
-        "ok": not parts["removed"] and not disturbed,
+        "unexplained": unexplained,
+        "ok": not unexplained and not disturbed,
     }
 
 
@@ -224,8 +235,9 @@ def report(before: Path, after: Path, result: dict) -> str:
     if result["disturbed"]:
         lines.append(f"WARNING: {', '.join(result['disturbed'])} changed. "
                      f"Slides nobody edited may now render differently.")
-    if result["parts"]["removed"]:
-        lines.append(f"WARNING: parts lost: {', '.join(result['parts']['removed'])}.")
+    if result["unexplained"]:
+        lines.append(f"WARNING: parts lost that no deleted slide accounts for: "
+                     f"{', '.join(result['unexplained'])}.")
     return " ".join(lines)
 
 
