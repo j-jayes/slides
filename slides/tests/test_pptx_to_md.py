@@ -34,6 +34,18 @@ def text_shape(name: str, text: str) -> str:
             f"<p:txBody><a:p><a:r><a:t>{text}</a:t></a:r></a:p></p:txBody></p:sp>")
 
 
+def broken_shape(name: str, *paras: str) -> str:
+    """A shape whose paragraphs hold <a:br/> line breaks, as a title block does."""
+    body = ""
+    for para in paras:
+        lvl, _, text = para.partition("|")
+        ppr = f'<a:pPr lvl="{lvl}"><a:buChar char="-"/></a:pPr>' if lvl.isdigit() else ""
+        runs = "<a:br/>".join(f"<a:r><a:t>{seg}</a:t></a:r>" for seg in text.split("//"))
+        body += f"<a:p>{ppr}{runs}</a:p>"
+    return (f'<p:sp><p:nvSpPr><p:cNvPr id="3" name="{name}"/></p:nvSpPr>'
+            f"<p:txBody>{body}</p:txBody></p:sp>")
+
+
 def slide(*shapes: str) -> str:
     return f"<p:sld {A} {P} {R}><p:cSld><p:spTree>{''.join(shapes)}</p:spTree></p:cSld></p:sld>"
 
@@ -54,7 +66,10 @@ def tiny_deck(path: Path) -> None:
         z.writestr("ppt/slides/slide2.xml", slide(text_shape("Title 1", "Comes first")))
         z.writestr("ppt/slides/_rels/slide2.xml.rels",
                    rels("../slideLayouts/slideLayout1.xml", "../notesSlides/notesSlide1.xml"))
-        z.writestr("ppt/slides/slide1.xml", slide(text_shape("Title 1", "Comes second")))
+        z.writestr("ppt/slides/slide1.xml",
+                   slide(text_shape("Title 1", "Comes second"),
+                         broken_shape("Subtitle 2", "|What it decides//Jonathan Jayes",
+                                      "1|First half//second half")))
         z.writestr("ppt/slides/_rels/slide1.xml.rels", rels("../slideLayouts/slideLayout1.xml"))
         z.writestr("ppt/slideLayouts/slideLayout1.xml",
                    f'<p:sldLayout {P}><p:cSld name="Title Only"/></p:sldLayout>')
@@ -79,6 +94,14 @@ class TinyDeckTest(unittest.TestCase):
     def test_each_slide_is_headed_with_its_number_and_layout(self):
         self.assertIn("## Slide 1 — layout: Title Only", self.md)
         self.assertIn("## Slide 2 — layout: Title Only", self.md)
+
+    def test_a_line_break_starts_a_new_line(self):
+        # <a:br/> inside one paragraph is how a title block carries a subtitle
+        # and an author. Joining the runs runs them together.
+        self.assertIn("What it decides\nJonathan Jayes", self.md)
+
+    def test_a_break_inside_a_bullet_stays_inside_the_bullet(self):
+        self.assertIn("  - First half\n    second half", self.md)
 
     def test_notes_follow_their_own_slide(self):
         first, second = self.md.split("## Slide 2")
