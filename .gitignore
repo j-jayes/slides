@@ -44,3 +44,10 @@ desktop.ini
 
 # API keys, read by bananarama via readRenviron(".env"). Never committed.
 .env
+
+# A colleague's deck and everything tools/deck_inbox.py derives from it. The
+# *.pptx rule above does not cover the derived Markdown, PNGs and JSON, and
+# those carry the client's words just as plainly as the deck does.
+/inbox/
+/work/
+/outbox/

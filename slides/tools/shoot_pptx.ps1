@@ -1,17 +1,26 @@
-# Export a .pptx to one PNG per slide via PowerPoint COM.
+# Export a .pptx to one PNG per slide via PowerPoint COM, and optionally a PDF.
 #
 # This doubles as the corruption test: if the package is malformed, PowerPoint
 # raises a repair prompt and Presentations.Open fails rather than returning.
 #
 #   powershell -File tools/shoot_pptx.ps1 -Deck ../reports/my-deck.pptx
+#   powershell -File tools/shoot_pptx.ps1 -Deck deck.pptx -Pdf deck.pdf
+#
+# PowerPoint is the only renderer here, and the right one: it is what the
+# colleague will open the deck in, so what it draws is what they will see.
 param(
     [Parameter(Mandatory = $true)][string]$Deck,
-    [string]$OutDir = "$env:TEMP\claude\pptxshots"
+    [string]$OutDir = "$env:TEMP\claude\pptxshots",
+    [string]$Pdf
 )
 
+# Every path handed to COM must be absolute. PowerPoint resolves a relative
+# one against its own working directory, not ours, and then reports the file
+# as missing -- from a directory this script has just created.
 $deckPath = (Resolve-Path $Deck).Path
 if (Test-Path $OutDir) { Remove-Item $OutDir -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+$OutDir = (Resolve-Path $OutDir).Path
 
 # New-Object -ComObject returns the RUNNING PowerPoint if there is one, and
 # quitting it would close the decks the user has open. So attach when one is
@@ -37,6 +46,14 @@ try {
     # msoTrue/msoFalse: ReadOnly, Untitled, WithWindow
     if (-not $wasOpen) { $pres = $ppt.Presentations.Open($deckPath, -1, 0, 0) }
     $pres.SaveCopyAs($OutDir, 18)   # 18 = ppSaveAsPNG, one file per slide
+    if ($Pdf) {
+        # SaveCopyAs, not SaveAs: SaveAs repoints the open presentation at the
+        # new file, and on a labelled deck it can raise a modal label prompt
+        # that never returns when nobody is at the keyboard.
+        $pdfPath = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine((Get-Location).Path, $Pdf))
+        $pres.SaveCopyAs($pdfPath, 32)   # 32 = ppSaveAsPDF
+        Write-Output "pdf: $pdfPath"
+    }
     Write-Output "slides: $($pres.Slides.Count)"
     if (-not $wasOpen) { $pres.Close() }
 }

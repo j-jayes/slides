@@ -2,7 +2,9 @@
 
 A Quarto Reveal.js template that renders one `.qmd` to branded HTML and to
 editable PowerPoint, publishes the HTML as a GitHub Pages site with a listing
-page, and the Claude Code skills for writing the deck that goes in it.
+page, and the Claude Code skills for writing the deck that goes in it. It also
+works in the other direction: it takes in a `.pptx` a colleague built, edits
+it, and [hands it back with the rest provably untouched](#a-colleagues-deck).
 
 ```bash
 cd slides
@@ -71,6 +73,79 @@ table rows full width) and the takeaway itself to about 25 words in a column; a
 stat row cannot share a slide with `.columns`; and a section divider title over
 about 60 characters runs off the top of the slide.
 
+## A colleague's deck
+
+A deck someone else built is not ours to rebuild. They will open it, look for
+their own slides, and notice anything that moved. So it goes through a round
+trip of its own. Drop it in `inbox/` (gitignored, as are `work/` and `outbox/`
+— a client's deck and everything derived from it stays out of the repo). All
+paths relative to `slides/`:
+
+```bash
+python tools/deck_inbox.py intake "../inbox/Deras förslag.pptx"   # -> work/<slug>/
+python tools/pptx_inventory.py deck.pptx inventory.json    # shape ids, geometry, colours, layouts
+python tools/pptx_edit.py xml  deck.pptx 8                 # read one slide's XML
+python tools/pptx_edit.py add  deck.pptx --clone 8 --after 8      # a starting point
+python tools/pptx_edit.py add  deck.pptx new-slide.xml --after 8  # an authored slide
+python tools/pptx_edit.py text deck.pptx --slide 13 --shape 4 --para 0 "Ny rubrik"
+python tools/pptx_edit.py delete deck.pptx 17              # with its notes and orphaned media
+python tools/pptx_edit.py move deck.pptx 9 --to 6          # rewrites only the running order
+python tools/pptx_diff.py check deck.pptx                  # what PowerPoint would refuse
+python tools/pptx_diff.py diff original.pptx deck.pptx     # what we actually touched
+python tools/deck_inbox.py handback ../work/deras-forslag  # -> outbox/, with a change note
+```
+
+`intake` builds `work/<slug>/` with the deck as Markdown, a shape inventory, a
+PNG of every slide and a PDF. `handback` validates, diffs, re-renders, and
+writes `outbox/<their name> (Nexer).pptx` with a PDF and a change note beside
+it. A deck with a hard problem never gets that far.
+
+Every edit is a zip rewritten to a zip, copying the bytes of every part it was
+not asked to touch, so a slide nobody edited goes back **byte-for-byte** as it
+arrived — which `pptx_diff.py` proves rather than assumes. That is why none of
+this uses python-pptx: it re-serialises every part it parses, and on a deck
+carrying a sensitivity label or SharePoint metadata it can drop parts outright.
+
+### What it has been proven on
+
+A real 16-slide client proposal (2026-09-18, Windows 11, PowerPoint 16). The
+deck is confidential, so it is not in the repo and there is no screenshot here.
+One slide was authored in the deck's own idiom and inserted after slide 8:
+
+| Check | Result |
+|---|---|
+| `pptx_diff.py diff`, SHA-256 per part | **16 of 16** original slides byte-for-byte unchanged. Only `[Content_Types].xml`, `ppt/presentation.xml` and `ppt/_rels/presentation.xml.rels` changed; nothing removed |
+| Sensitivity label and SharePoint `customXml` | Survived |
+| PowerPoint opens the result | 17 slides, no repair prompt |
+| Before/after PNG export of the 16 originals | Pixel-identical, mapped by original position |
+| A title edited on another slide | Kept its typeface, size, weight and colour, and still fits its box |
+| A slide moved 9 → 6, another deleted | Package still clean; PowerPoint reports 16 |
+
+The same verbs run against `reports/template.pptx` and a rendered Quarto
+fixture, and every edit test runs in both PowerPoint's and pandoc's XML
+dialects — a regex that knows only one of them passes on a fixture and breaks
+on a real render.
+
+Two things that deck taught, both now in the tools:
+
+- **The standard advice is wrong for a generated deck.** "Build on their
+  layouts and placeholders, reference theme colours rather than hex" is right
+  for a human-authored template. This one came out of PptxGenJS: one empty
+  layout, zero placeholders, a stock Office theme, and 1225 `srgbClr` against
+  4 `schemeClr` — so a `schemeClr` resolves to Office blue and looks foreign.
+  `pptx_inventory.py` reports `kind` as `template` or `free-shape`, and the
+  `colleague-deck` skill branches on it.
+- **A deck can arrive already broken.** This one had no slide-number fields,
+  only literal text boxes, and seven of them disagreed with their position
+  because slides had been inserted by hand later. `pptx_diff.py check` reports
+  it and `handback` puts it in the change note, so the colleague hears it from
+  us rather than thinking we did it.
+
+Not built yet: authoring the new slide in this kit and transplanting it with
+its own master and theme, so it arrives Nexer-branded rather than in their
+idiom ([#4](https://github.com/j-jayes/slides/issues/4)). Sections
+(`p14:sectionLst`) are warned about, not maintained.
+
 ## Getting the kit
 
 Four ways in, because the deck kit and the skills install by different routes.
@@ -111,7 +186,7 @@ as `/slides:nexer-slides` or triggered automatically by what you ask for.
 | `slides/R/nexer-ggplot.R` | `theme_nexer()`, the chart palette, `nexer_span()` for coloured-subtitle legends, and the `label_short()` / `label_pct()` axis formatters. |
 | `slides/R/nexer-diagrams.R` | `row_of()`, `nexer_boxes()` and friends — box-and-arrow diagrams that export to PowerPoint. |
 | `slides/tools/` | Build, publish and verification scripts (below). |
-| `slides/tests/` | The layout and component regressions. |
+| `slides/tests/` | The layout and component regressions, plus `deckfixture.py` — a deck written in memory in both PowerPoint's and pandoc's XML dialects. |
 | `skills/` | The Claude Code skills, shipped as the `slides` plugin. |
 | `.claude-plugin/` | Plugin and marketplace manifests. This repo is its own single-plugin marketplace. |
 
@@ -147,6 +222,8 @@ python tools/export_pdf.py _site/my-deck.html      # print the deck to PDF via h
 python tools/pptx_to_md.py draft.pptx draft.md     # read a pptx (e.g. a client draft) back as Markdown
 ```
 
+The tools for someone else's deck are under [A colleague's deck](#a-colleagues-deck).
+
 `shoot_pptx.ps1` doubles as the corruption test: a malformed package makes
 PowerPoint raise a repair prompt and the COM open fails. It attaches to a
 running PowerPoint rather than starting and quitting one, so it will not close
@@ -161,7 +238,7 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Twenty-five skills ship in the plugin. Five are about decks:
+Twenty-six skills ship in the plugin. Six are about decks:
 
 | Skill | What it covers |
 |---|---|
@@ -170,6 +247,7 @@ Twenty-five skills ship in the plugin. Five are about decks:
 | `mckinsey-slides` | Rigour — action-title grammar, the ghost deck, sourcing and chart conventions. |
 | `ggplot-diagrams` | Diagrams — box-and-arrow exhibits drawn in ggplot, so they survive the PowerPoint export. |
 | `illustrate-slides` | Illustration — AI images from a committed YAML file, one style across the deck, one recurring character. |
+| `colleague-deck` | Someone else's .pptx — read it, see it, add slides in its own idiom, hand it back with the rest byte-for-byte unchanged. |
 
 Thirteen are about charts — Claus Wilke's rules plus the habits from
 [interlude-one](https://github.com/j-jayes/interlude-one), codified as runnable

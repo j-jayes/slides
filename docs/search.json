@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Slides",
+    "section": "",
+    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 18, 2026\n\n\n\n\n\n\nNo matching items"
+  },
+  {
     "objectID": "template.html#context",
     "href": "template.html#context",
     "title": "Deck title goes here",
@@ -35,6 +42,13 @@
     "text": "Bridge\nTwo thirds of the saving comes from a single lever\n\n\n€ millions, annualised\n\n\nNote: Figures rounded to the nearest million; totals may not sum.   Source: Engagement model v4\n\n\nA bridge answers “where does the number come from”. Label the start bar, the end bar, and every step between — an unlabelled segment is an invitation to be asked about it."
   },
   {
+    "objectID": "template.html#target-state",
+    "href": "template.html#target-state",
+    "title": "Deck title goes here",
+    "section": "Target state",
+    "text": "Target state\nThree capabilities are in place and two are missing, and the gaps are all foundational\n\n\nNote: Dashed boxes are capabilities that do not exist yet, not ones that exist and underperform.\n\n\nDiagrams are drawn with ggplot rather than Mermaid, because a knitr figure is the one shape PowerPoint keeps on a single slide. See the ggplot-diagrams skill.\nA diagram slide carries no columns and no stat row — both make pandoc split the slide in the pptx export, and the diagram loses its rail."
+  },
+  {
     "objectID": "template.html#recommendation",
     "href": "template.html#recommendation",
     "title": "Deck title goes here",
@@ -47,19 +61,5 @@
     "title": "Deck title goes here",
     "section": "Appendix",
     "text": "Appendix\nLayout reference\n\n\nSyntax that earns its place:\n\n## Kicker then ### Action title\n::: {.stats} with [42]{.figure} [Label]{.label}\n::: {.takeaway} for the bold lead-in\n::: {.units} under a chart\n::: {.source} for the bottom rail\n[text]{.chip} and [text]{.chip .accent}\n\n\nPer-slide attributes:\n\n{background-color=\"#5A1F9F\"} — statement slide\n{background-image=\"assets/swirl-dark.jpg\"} — divider\n{.smaller} / {.scrollable} — dense slides\n{visibility=\"uncounted\"} — appendix\n{visibility=\"hidden\"} — parked\n\nNexer purple Highlight\n\n\nKeep this slide in the deck while drafting and delete it before presenting."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Slides",
-    "section": "",
-    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 11, 2026\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "template.html#target-state",
-    "href": "template.html#target-state",
-    "title": "Deck title goes here",
-    "section": "Target state",
-    "text": "Target state\nThree capabilities are in place and two are missing, and the gaps are all foundational\n\n\nNote: Dashed boxes are capabilities that do not exist yet, not ones that exist and underperform.\n\n\nDiagrams are drawn with ggplot rather than Mermaid, because a knitr figure is the one shape PowerPoint keeps on a single slide. See the ggplot-diagrams skill.\nA diagram slide carries no columns and no stat row — both make pandoc split the slide in the pptx export, and the diagram loses its rail."
   }
 ]
