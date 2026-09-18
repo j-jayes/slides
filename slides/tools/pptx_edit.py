@@ -38,6 +38,7 @@ from pptx_to_md import NS, rels_of
 P = f"{{{NS['p']}}}"
 R = f"{{{NS['r']}}}"
 OFFDOC = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+PKG_RELS = "http://schemas.openxmlformats.org/package/2006/relationships"
 SLIDE_CT = "application/vnd.openxmlformats-officedocument.presentationml.slide+xml"
 
 # ST_SlideId in pml.xsd: 256 <= id <= 2147483647. Below the floor PowerPoint
@@ -225,11 +226,10 @@ def _slide_rels(source_rels: str | None, layout_part: str) -> str:
     target = "../" + layout_part.split("ppt/", 1)[1]
     if source_rels is None:
         return ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
-                f'<Relationships xmlns="{OFFDOC.replace("officeDocument/2006", "package/2006")}">'
+                f'<Relationships xmlns="{PKG_RELS}">'
                 f'<Relationship Id="rId1" Type="{OFFDOC}/slideLayout" Target="{target}"/>'
                 f"</Relationships>")
-    kept = re.sub(r"<Relationship\b[^>]*?/relationships/notesSlide\"[^>]*?/>", "", source_rels)
-    return re.sub(r"<Relationship\b[^>]*?relationships/notesSlide[^>]*?/>", "", kept)
+    return re.sub(r"<Relationship\b[^>]*?relationships/notesSlide[^>]*?/>", "", source_rels)
 
 
 def _check_references(xml: bytes, rels: str) -> None:
