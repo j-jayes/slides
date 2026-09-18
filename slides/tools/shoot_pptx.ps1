@@ -14,9 +14,13 @@ param(
     [string]$Pdf
 )
 
+# Every path handed to COM must be absolute. PowerPoint resolves a relative
+# one against its own working directory, not ours, and then reports the file
+# as missing -- from a directory this script has just created.
 $deckPath = (Resolve-Path $Deck).Path
 if (Test-Path $OutDir) { Remove-Item $OutDir -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+$OutDir = (Resolve-Path $OutDir).Path
 
 # New-Object -ComObject returns the RUNNING PowerPoint if there is one, and
 # quitting it would close the decks the user has open. So attach when one is

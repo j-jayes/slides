@@ -1,6 +1,7 @@
 """Take in a colleague's deck and set up somewhere to work on it.
 
     python tools/deck_inbox.py intake "../inbox/Deras förslag.pptx"
+    python tools/deck_inbox.py handback ../work/deras-forslag
 
 Drop what arrives in inbox/. This copies it to work/<slug>/ and lays out
 everything an agent needs to read it, see it and change it:
@@ -18,6 +19,12 @@ The original is the baseline the return step diffs against, which is what
 makes "we changed nothing else" a claim rather than a hope. Nothing here
 writes to inbox/.
 
+`handback` checks the edited deck, diffs it against the original, renders it
+again, and puts it in outbox/ under the colleague's own file name with a
+change note beside it. A deck that has lost a part, or whose XML no longer
+parses, does not get that far -- the last place to catch that is here rather
+than in their PowerPoint.
+
 The work directory is named in ASCII however the sender named the file: COM
 resolves paths through the process locale and PowerShell is shelled out to,
 and neither is worth debugging over an umlaut.
@@ -33,6 +40,7 @@ import unicodedata
 from datetime import date
 from pathlib import Path
 
+import pptx_diff
 import pptx_inventory
 import pptx_to_md
 
@@ -101,6 +109,47 @@ def intake(src: Path, root: Path = ROOT, render: bool = True) -> Path:
     return work
 
 
+def handback(work: Path, render: bool = True) -> Path:
+    """Check, diff, render and put the edited deck in outbox/."""
+    work = Path(work)
+    deck, original = work / "deck.pptx", work / "original.pptx"
+    if not deck.is_file() or not original.is_file():
+        raise SystemExit(f"{work} is not a work directory from `intake`")
+
+    problems = pptx_diff.validate(deck)
+    hard = [p for p in problems if not p.startswith("note:")]
+    if hard:
+        raise SystemExit("this deck would not open cleanly, so it is not going out:\n  "
+                         + "\n  ".join(hard))
+    result = pptx_diff.diff(original, deck)
+    if not result["ok"]:
+        raise SystemExit("this edit disturbed parts it should not have, so it is not "
+                         "going out:\n  " + pptx_diff.report(original, deck, result))
+
+    if render:
+        shoot(deck, work / "after", work / "after.pdf")
+
+    name = _original_name(work)
+    out = work.parents[1] / "outbox" / f"{name.stem} (Nexer){name.suffix}"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(deck, out)
+    if render:
+        shutil.copy2(work / "after.pdf", out.with_suffix(".pdf"))
+    out.with_suffix(".changes.md").write_text(
+        (work / "changes.md").read_text(encoding="utf8")
+        + pptx_diff.report(original, deck, result) + "\n"
+        + "".join(f"\n{p}" for p in problems if p.startswith("note:")) + "\n",
+        encoding="utf8")
+    print(f"{out}\n{pptx_diff.report(original, deck, result)}")
+    return out
+
+
+def _original_name(work: Path) -> Path:
+    """The colleague's own file name, recovered from the change log's first line."""
+    first = (work / "changes.md").read_text(encoding="utf8").splitlines()[0]
+    return Path(first.removeprefix("# Changes to ").strip())
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -108,8 +157,14 @@ def main() -> int:
     take.add_argument("deck", type=Path)
     take.add_argument("--no-render", action="store_true",
                       help="skip the PowerPoint export (no PNGs, no PDF)")
+    back = sub.add_parser("handback", help="check, diff and send the edited deck out")
+    back.add_argument("work", type=Path)
+    back.add_argument("--no-render", action="store_true")
     args = ap.parse_args()
-    intake(args.deck, render=not args.no_render)
+    if args.cmd == "intake":
+        intake(args.deck, render=not args.no_render)
+    else:
+        handback(args.work, render=not args.no_render)
     return 0
 
 
