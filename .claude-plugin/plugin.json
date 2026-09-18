@@ -1,6 +1,6 @@
 {
   "name": "slides",
-  "description": "Twenty-five Claude Code skills for building slide decks and the charts that go in them: deck structure, Nexer branding and PowerPoint export, AI illustration, McKinsey-style rigour, a thirteen-skill ggplot2 data-visualisation family, plus TDD, manual testing, git discipline and more. The Quarto slide kit itself is the repo, not the plugin.",
+  "description": "Twenty-six Claude Code skills for building slide decks and the charts that go in them: deck structure, Nexer branding and PowerPoint export, editing a colleague's .pptx and handing it back byte-for-byte intact, AI illustration, McKinsey-style rigour, a thirteen-skill ggplot2 data-visualisation family, plus TDD, manual testing, git discipline and more. The Quarto slide kit itself is the repo, not the plugin.",
   "version": "2.4.0",
   "author": {
     "name": "Jonathan Jayes",
