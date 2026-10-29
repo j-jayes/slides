@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Slides",
     "section": "",
-    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nSep 18, 2026\n\n\n\n\n\n\nNo matching items"
+    "text": "Every deck in this project. Each card opens the Reveal.js version; the editable PowerPoint is in reports/.\n\n\n\n\n\n\n\n\n\n\n\n\nSpooky Quiz\n\n\nHalloween pub-quiz theme. Pumpkin and aubergine, Creepster titles, Dark2 answer cards, drifting emoji.\n\n\n\n\n\n\n\n\n\n\nDeck title goes here\n\n\nWhat this deck argues, in one line, for the listing card.\n\n\n\nOct 29, 2026\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "template.html#context",
@@ -61,5 +61,61 @@
     "title": "Deck title goes here",
     "section": "Appendix",
     "text": "Appendix\nLayout reference\n\n\nSyntax that earns its place:\n\n## Kicker then ### Action title\n::: {.stats} with [42]{.figure} [Label]{.label}\n::: {.takeaway} for the bold lead-in\n::: {.units} under a chart\n::: {.source} for the bottom rail\n[text]{.chip} and [text]{.chip .accent}\n\n\nPer-slide attributes:\n\n{background-color=\"#5A1F9F\"} — statement slide\n{background-image=\"assets/swirl-dark.jpg\"} — divider\n{.smaller} / {.scrollable} — dense slides\n{visibility=\"uncounted\"} — appendix\n{visibility=\"hidden\"} — parked\n\nNexer purple Highlight\n\n\nKeep this slide in the deck while drafting and delete it before presenting."
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#round-1-geography",
+    "href": "spooky-quiz-demo.html#round-1-geography",
+    "title": "Spooky Quiz",
+    "section": "Round 1: Geography 🌍",
+    "text": "Round 1: Geography 🌍\nRound title card · {.round background-color=\"#FF6F08\"}"
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#section",
+    "href": "spooky-quiz-demo.html#section",
+    "title": "Spooky Quiz",
+    "section": "",
+    "text": "Question 1 · multiple choice\n\n\nWhich country spans the most time zones?\n\n\n\nRussia\n\n\nUSA\n\n\nFrance\n\n\nChina"
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#section-1",
+    "href": "spooky-quiz-demo.html#section-1",
+    "title": "Spooky Quiz",
+    "section": "",
+    "text": "Answer slide · .options.answered + .correct\n\n\nWhich country spans the most time zones?\n\n\n\nRussia\n\n\nUSA\n\n\nFrance\n\n\nChina\n\n\n\n12 thanks to its overseas territories. China, 5,000 km wide, uses one."
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#section-2",
+    "href": "spooky-quiz-demo.html#section-2",
+    "title": "Spooky Quiz",
+    "section": "",
+    "text": "Question 2 · picture + a row of options\n\n\nWhich country is this?\n\n\n\n\n\n\nEswatini\n\n\nRwanda\n\n\nBurundi\n\n\nLesotho"
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#section-3",
+    "href": "spooky-quiz-demo.html#section-3",
+    "title": "Spooky Quiz",
+    "section": "",
+    "text": "Question 3 · ordering\n\n\nPut these bridges in order of opening, oldest first.\n\n\n\nGolden Gate\n\n\nØresund\n\n\nBrooklyn\n\n\nSydney Harbour\n\n\n\nC → D → A → B"
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#section-4",
+    "href": "spooky-quiz-demo.html#section-4",
+    "title": "Spooky Quiz",
+    "section": "",
+    "text": "Question 4 · rebus\n\n\n\n\nED\n\n\n4\n\n\n+"
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#section-5",
+    "href": "spooky-quiz-demo.html#section-5",
+    "title": "Spooky Quiz",
+    "section": "",
+    "text": "Song 1 · play it from Spotify, notes carry the answer\n\n\n🎵\n\n\nDancing On My Own - Robyn (2010). Start at 0:08."
+  },
+  {
+    "objectID": "spooky-quiz-demo.html#pens-down",
+    "href": "spooky-quiz-demo.html#pens-down",
+    "title": "Spooky Quiz",
+    "section": "Pens down 🖊️",
+    "text": "Pens down 🖊️\nAnswer section cards use purple"
   }
 ]
