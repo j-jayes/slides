@@ -1,0 +1,234 @@
+/*-- scss:defaults --*/
+
+// Jonas's 60years palette
+$pumpkin: #FF6F08;
+$aubergine: #363039;
+$purple: #872FE0;
+$slime: #89E031;
+$bone: #FFF4E0;
+
+// Brewer Dark2, one per option A-D
+$opt-a: #1B9E77;
+$opt-b: #D95F02;
+$opt-c: #7570B3;
+$opt-d: #E7298A;
+
+$body-bg: $aubergine;
+$body-color: $bone;
+$link-color: $slime;
+$font-family-sans-serif: "Special Elite", "Courier New", monospace;
+$presentation-heading-font: "Creepster", cursive;
+$presentation-heading-color: $pumpkin;
+$presentation-heading-text-transform: none;
+$presentation-heading-font-weight: 400;
+$presentation-font-size-root: 40px;
+$presentation-h1-font-size: 3.4em;
+$presentation-h2-font-size: 2.2em;
+
+/*-- scss:rules --*/
+
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  letter-spacing: 0.04em;
+  text-shadow: 4px 4px 0 $purple;
+}
+
+// Round title cards: orange like the invite, slime headline.
+.reveal .round h1,
+.reveal .round h2 {
+  color: $slime;
+  text-shadow: 4px 4px 0 $aubergine, 8px 8px 0 $purple;
+}
+.reveal .round p {
+  color: $aubergine;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.reveal .qnum {
+  color: $pumpkin;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.7em;
+  margin-bottom: 0.2em;
+}
+
+.reveal .prompt {
+  font-size: 1.15em;
+  line-height: 1.3;
+  margin-bottom: 0.6em;
+}
+
+// Options A-D as chunky cards, lettered and coloured by position.
+.reveal .options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 40px;
+  counter-reset: opt;
+  text-align: left;
+
+  > div {
+    counter-increment: opt;
+    position: relative;
+    padding: 22px 28px 22px 110px;
+    min-height: 1.6em;
+    border-radius: 18px;
+    border: 4px solid $bone;
+    box-shadow: 8px 8px 0 #1b161d;
+    color: #fff;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.4s, filter 0.4s;
+
+    &::before {
+      content: counter(opt, upper-alpha);
+      position: absolute;
+      left: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 64px;
+      height: 64px;
+      line-height: 64px;
+      border-radius: 50%;
+      background: $bone;
+      font-family: "Creepster", cursive;
+      font-size: 1.3em;
+      text-align: center;
+    }
+    &:nth-child(1) { background: $opt-a; &::before { color: $opt-a; } }
+    &:nth-child(2) { background: $opt-b; &::before { color: $opt-b; } }
+    &:nth-child(3) { background: $opt-c; &::before { color: $opt-c; } }
+    &:nth-child(4) { background: $opt-d; &::before { color: $opt-d; } }
+    p { margin: 0; }
+  }
+
+  // A row of four when the options sit under a picture.
+  &.row { grid-template-columns: repeat(4, 1fr); font-size: 0.8em; }
+}
+
+// Answer slides: the right card glows, the rest fade.
+.reveal .options.answered > div:not(.correct) {
+  opacity: 0.25;
+  filter: grayscale(0.8);
+}
+.reveal .options.answered > div.correct {
+  border-color: $slime;
+  animation: correct-pulse 1.4s ease-in-out infinite;
+}
+@keyframes correct-pulse {
+  0%, 100% { box-shadow: 8px 8px 0 #1b161d, 0 0 0 0 rgba($slime, 0.7); }
+  50% { box-shadow: 8px 8px 0 #1b161d, 0 0 0 18px rgba($slime, 0); }
+}
+
+.reveal .answer {
+  font-family: "Creepster", cursive;
+  color: $slime;
+  font-size: 1.9em;
+  text-shadow: 4px 4px 0 $purple;
+  margin: 0.3em 0;
+}
+
+.reveal .fact {
+  display: inline-block;
+  margin-top: 0.8em;
+  padding: 0.4em 0.8em;
+  border-left: 8px solid $pumpkin;
+  background: rgba($bone, 0.08);
+  font-size: 0.75em;
+  text-align: left;
+}
+
+// Picture questions: image left, options right, or image over a row of options.
+.reveal .qimg img {
+  max-height: 440px;
+  margin: 0 auto 0.4em;
+  border-radius: 14px;
+}
+
+.reveal .slides section.round,
+.reveal .slides section.q { text-align: center; }
+.reveal .qimg img { display: block; max-height: 480px; }
+
+// Answer slides carry the answer and a fact too, so pictures shrink.
+.reveal .ans .qimg img { max-height: 320px; }
+.reveal .ans .rebus img { height: 240px; }
+
+// Rebus: picture tiles with big operators between them.
+.reveal .rebus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: nowrap;
+
+  img {
+    height: 330px;
+    width: auto;
+    margin: 0;
+    border-radius: 18px;
+    border: 4px solid $bone;
+    box-shadow: 8px 8px 0 #1b161d;
+  }
+  .op,
+  .txt {
+    font-family: "Creepster", cursive;
+    font-size: 3em;
+    color: $pumpkin;
+    text-shadow: 4px 4px 0 $purple;
+  }
+  .txt { color: $slime; }
+  p { margin: 0; }
+}
+
+.reveal .song {
+  font-size: 7em;
+  line-height: 1.1;
+  animation: wobble 2.2s ease-in-out infinite;
+}
+@keyframes wobble {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+
+// Floating and flashing emoji (emoji.html). z-index 0 puts the layer above
+// reveal's slide backgrounds but below .slides (z-index 1), so it never covers text.
+.spooky-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.spooky-layer .drift {
+  position: absolute;
+  left: 0;
+  font-size: 3rem;
+  opacity: 0.55;
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  0% { transform: translate(-12vw, 0) rotate(0deg); }
+  25% { transform: translate(20vw, -6vh) rotate(25deg); }
+  50% { transform: translate(50vw, 4vh) rotate(-15deg); }
+  75% { transform: translate(80vw, -5vh) rotate(20deg); }
+  100% { transform: translate(112vw, 0) rotate(0deg); }
+}
+// Verbatim from Jonas's invite: pop in, flash, vanish.
+.spooky-layer .flicker {
+  position: absolute;
+  font-size: 3rem;
+  opacity: 0;
+  animation: flicker-flash ease-in-out infinite;
+}
+@keyframes flicker-flash {
+  0%, 92%, 100% { opacity: 0; transform: scale(0.5); }
+  94% { opacity: 1; transform: scale(1.3); }
+  97% { opacity: 0.9; transform: scale(1); }
+  98% { opacity: 0; transform: scale(1.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spooky-layer { display: none; }
+  .reveal .song, .reveal .options.answered > div.correct { animation: none; }
+}
