@@ -238,7 +238,7 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Twenty-six skills ship in the plugin. Six are about decks:
+Twenty-seven skills ship in the plugin. Six are about decks:
 
 | Skill | What it covers |
 |---|---|
@@ -277,6 +277,9 @@ The other seven are general engineering practice: `tdd`, `manual-testing`,
 `first-run-the-tests`, `git-discipline`, `walkthrough`, `subagent-fanout` and
 `data-dict`. `CLAUDE.md` carries the standing engineering standards; it is not
 part of the plugin, so copy it or point at it from your own.
+
+The last one is `web-design`: twenty rules, in five passes, that stop a web
+interface looking AI-generated.
 
 ## Provenance
 
