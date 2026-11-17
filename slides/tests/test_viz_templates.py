@@ -3,7 +3,8 @@ numbers the way the skills promise.
 
 A skill that ships a chart template nobody has run is worse than no template:
 an agent copies it, it fails on ggplot2 4.0 or on a missing package, and the
-agent improvises. So each `skills/viz-*/reference/*.R` is executed here with
+agent improvises. So each `viz-*/reference/*.R` in the j-jayes/skills repo
+(`plugins/slides/skills/`, found via VIZ_SKILLS_DIR or a sibling checkout) is executed here with
 Rscript, in a temp directory, and must leave behind a PNG (or HTML, for the gt
 table) of a plausible size without warnings about deprecated arguments.
 
@@ -25,7 +26,8 @@ import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-SKILLS = REPO / "skills"
+# The skills moved to j-jayes/skills (private); by default it is checked out next to this repo.
+SKILLS = Path(os.environ.get("VIZ_SKILLS_DIR", REPO.parent / "skills" / "plugins" / "slides" / "skills"))
 HELPERS = SKILLS / "viz-index" / "reference"
 NEXER_HELPERS = REPO / "slides" / "R" / "nexer-ggplot.R"
 CHECK_SCRIPT = Path(__file__).resolve().parent / "viz_helpers_check.R"
@@ -62,6 +64,7 @@ RSCRIPT = find_rscript()
 
 
 @unittest.skipIf(RSCRIPT is None, "Rscript not found on PATH, in Program Files or R_HOME")
+@unittest.skipUnless(SKILLS.is_dir(), f"viz skills not found at {SKILLS}; clone j-jayes/skills next to this repo or set VIZ_SKILLS_DIR")
 class VizTemplateTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

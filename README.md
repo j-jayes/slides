@@ -156,15 +156,14 @@ Pick by what you are doing.
 | A new repo for a deck | GitHub **Use this template**. You get everything, agent config included. |
 | The kit inside an existing repo | `quarto use template j-jayes/slides` from the repo root, answering **no** to the subdirectory prompt |
 | Only the two formats | `quarto add j-jayes/slides` |
-| The skills, in every project | `claude plugin marketplace add j-jayes/slides` then `claude plugin install slides@j-jayes` |
+| The skills, in every project | `claude plugin marketplace add j-jayes/skills` then `claude plugin install slides@j-jayes` (private repo; needs access) |
 
 Two things about the middle routes worth knowing before you are surprised by
 them:
 
 - `quarto use template` already puts the project in `slides/`, which is why you
   answer no when it offers to make a subdirectory — say yes and you get
-  `slides/slides/`. It copies neither `docs/`, `reports/`, `slides/tests/` nor
-  `skills/`, and never copies top-level dotfiles, so `.gitignore` and
+  `slides/slides/`. It copies neither `docs/`, `reports/` nor `slides/tests/`, and never copies top-level dotfiles, so `.gitignore` and
   `.claude/` travel only via the GitHub template. `template.qmd` keeps its name
   (Quarto only auto-renames one at the repo root).
 - `quarto add` installs `_extensions/nexer/` and nothing else — so you get the
@@ -187,8 +186,6 @@ as `/slides:nexer-slides` or triggered automatically by what you ask for.
 | `slides/R/nexer-diagrams.R` | `row_of()`, `nexer_boxes()` and friends — box-and-arrow diagrams that export to PowerPoint. |
 | `slides/tools/` | Build, publish and verification scripts (below). |
 | `slides/tests/` | The layout and component regressions, plus `deckfixture.py` — a deck written in memory in both PowerPoint's and pandoc's XML dialects. |
-| `skills/` | The Claude Code skills, shipped as the `slides` plugin. |
-| `.claude-plugin/` | Plugin and marketplace manifests. This repo is its own single-plugin marketplace. |
 
 ## The one authoring rule
 
@@ -238,7 +235,7 @@ a silent one-page blank rather than an error.
 
 ## Skills
 
-Twenty-seven skills ship in the plugin. Six are about decks:
+The skills live in [j-jayes/skills](https://github.com/j-jayes/skills) (private) as the `slides` plugin. Six are about decks:
 
 | Skill | What it covers |
 |---|---|
@@ -269,13 +266,14 @@ templates. Start at `viz-index`:
 | `viz-tables` | Wilke's six table rules in gt. |
 | `viz-review` | The checklist you run on the rendered PNG before shipping. |
 
-Their helper file is `skills/viz-index/reference/viz.R`: copy it to `R/viz.R`
+Their helper file is `viz-index/reference/viz.R` in that plugin: copy it to `R/viz.R`
 in a project and every template runs. Each ships runnable `reference/*.R`
-scripts, exercised by `tests/test_viz_templates.py`.
+scripts, exercised by `tests/test_viz_templates.py` here, which looks for a
+`skills` checkout next to this repo (or `VIZ_SKILLS_DIR`).
 
-The other seven are general engineering practice: `tdd`, `manual-testing`,
-`first-run-the-tests`, `git-discipline`, `walkthrough`, `subagent-fanout` and
-`data-dict`. `CLAUDE.md` carries the standing engineering standards; it is not
+The general engineering skills (`tdd`, `manual-testing`, `first-run-the-tests`,
+`git-discipline`, `walkthrough`, `subagent-fanout`, `data-dict`) are now the
+`dev` plugin in the same marketplace. `CLAUDE.md` carries the standing engineering standards; it is not
 part of the plugin, so copy it or point at it from your own.
 
 The last one is `web-design`: twenty rules, in five passes, that stop a web
